@@ -75,7 +75,7 @@
     }
     #LoveButton {
       position: fixed;
-      bottom: 40px;
+      bottom: 60px;
       left: 50%;
       transform: translateX(-50%);
       z-index: 20;
@@ -88,16 +88,20 @@
       cursor: pointer;
       box-shadow: 0 0 10px crimson;
     }
-    @keyframes explode {
+    @keyframes heartExplode {
   0% {
     transform: scale(1) translate(0, 0);
     opacity: 1;
   }
   100% {
-    transform: scale(2) translate(calc(200px - 400px * Math.random()), calc(200px - 400px * Math.random()));
+    transform: scale(1.5) translate(
+      calc(200px - 400px * var(--rand-x)), 
+      calc(200px - 400px * var(--rand-y))
+    );
     opacity: 0;
   }
 }
+
 
   </style>
 </head>
@@ -108,7 +112,8 @@
 
 <button id="playButton">▶️ Ascolta la musica romantica</button>
 <button id="LoveButton">L❤️VE YOU</button>
-
+  
+<audio id="explosionSound" src="https://www.soundjay.com/mechanical/sounds/explosion-01.mp3" preload="auto"></audio>
 <audio id="bgMusic" loop>
   <source src="https://www.bensound.com/bensound-music/bensound-romantic.mp3" type="audio/mpeg" />
   Il tuo browser non supporta l'audio.
@@ -278,26 +283,39 @@
   }, 6000);
 }
 
-  function explodeHearts() {
+function explodeHearts() {
   const numberOfHearts = 100;
   const emojis = ['❤️','💖','💘','💕','💞','💓','💗','💝','💟'];
-  
+  const sound = document.getElementById('explosionSound');
+
+  // Riproduce il suono
+  sound.currentTime = 0; // riavvia se già in corso
+  sound.play();
+
   for (let i = 0; i < numberOfHearts; i++) {
     const heart = document.createElement('div');
     heart.className = 'heart';
     heart.textContent = emojis[Math.floor(Math.random() * emojis.length)];
-    heart.style.left = Math.random() * 100 + 'vw';
-    heart.style.top = Math.random() * 100 + 'vh';
+
+    const randX = Math.random();
+    const randY = Math.random();
+
+    heart.style.left = '50vw';
+    heart.style.top = '50vh';
+
+    heart.style.setProperty('--rand-x', randX);
+    heart.style.setProperty('--rand-y', randY);
+    heart.style.animation = 'heartExplode 1.5s ease-out forwards';
     heart.style.fontSize = (Math.random() * 30 + 20) + 'px';
-    heart.style.animation = 'explode 2s ease-out forwards';
+
     document.body.appendChild(heart);
 
-    // Rimuovi il cuore dopo l'animazione
     setTimeout(() => {
       heart.remove();
-    }, 2000);
+    }, 1500);
   }
 }
+
 
 // Aggiungi listener al pulsante
 document.getElementById('LoveButton').addEventListener('click', explodeHearts);
@@ -366,6 +384,8 @@ setInterval(createHeart, 700);
 
 const playBtn = document.getElementById("playButton");
 const bgMusic = document.getElementById("bgMusic");
+
+
 
 playBtn.addEventListener("click", () => {
 bgMusic.play();
