@@ -235,73 +235,82 @@
 
   // Cuori che fluttuano
   function createHeart() {
-    const heart = document.createElement("div");
-    heart.className = "heart";
-    heart.textContent = "❤️";
-    heart.style.left = Math.random() * W + "px";
-    heart.style.fontSize = (15 + Math.random() * 20) + "px";
-    heart.style.color = ["#00ffff", "#ffff00", "#00ff00"][Math.floor(Math.random()*3)];
-    document.body.appendChild(heart);
-    hearts.push(heart);
+  const heart = document.createElement("div");
+  heart.className = "heart";
+  heart.textContent = "❤️";
+  heart.style.left = Math.random() * W + "px";
+  heart.style.top = (H + 30) + "px";  // parte da poco sotto il bordo inferiore
+  heart.style.fontSize = (15 + Math.random() * 20) + "px";
+  heart.style.color = ["#00ffff", "#ffff00", "#00ff00"][Math.floor(Math.random()*3)];
+  document.body.appendChild(heart);
+  hearts.push(heart);
 
-    setTimeout(() => {
-      heart.remove();
-      hearts = hearts.filter(h => h !== heart);
-    }, 6000);
-  }
+  setTimeout(() => {
+    heart.remove();
+    hearts = hearts.filter(h => h !== heart);
+  }, 6000);
+}
 
-  function update(timestamp){
-    ctx.clearRect(0, 0, W, H);
+ function update(timestamp){
+  ctx.clearRect(0, 0, W, H);
 
-    if (animationPhase === "falling") {
-      for(let i=0; i<10; i++) { // più particelle per frame
-        if (nextPixelIndex < pixelOrder.length) {
-            const p = pixelOrder[nextPixelIndex++];
-            particles.push(new Particle(p.x, p.y, p.color));
-          }
+  if (animationPhase === "falling") {
+    // Aggiungo fuochi d'artificio anche qui
+    if (!update.lastFireworkTime || timestamp - update.lastFireworkTime > 500) {
+      createFirework();
+      update.lastFireworkTime = timestamp;
+    }
+
+    for(let i=0; i<10; i++) {
+      if (nextPixelIndex < pixelOrder.length) {
+        const p = pixelOrder[nextPixelIndex++];
+        particles.push(new Particle(p.x, p.y, p.color));
       }
+    }
     let allComposed = true;
     for (const p of particles) {
-    p.update();
-    if (!p.isComposed) allComposed = false;
+      p.update();
+      if (!p.isComposed) allComposed = false;
     }
     for (const p of particles) p.draw();
-  if (allComposed && nextPixelIndex >= pixelOrder.length) {
-    // dopo 5 minuti passa alla fase di fuochi
+
+    fireworks = fireworks.filter(fw => fw.alpha > 0);
+    for (const fw of fireworks) {
+      fw.update();
+      fw.draw();
+    }
+
+    if (allComposed && nextPixelIndex >= pixelOrder.length) {
+      if (timestamp - phaseStartTime > pauseDuration) {
+        animationPhase = "fireworks";
+        phaseStartTime = timestamp;
+      }
+    }
+
+  } else if (animationPhase === "fireworks") {
+    for (const p of particles) {
+      p.draw();
+    }
+    if (!update.lastFireworkTime || timestamp - update.lastFireworkTime > 300) {
+      createFirework();
+      update.lastFireworkTime = timestamp;
+    }
+    fireworks = fireworks.filter(fw => fw.alpha > 0);
+    for (const fw of fireworks) {
+      fw.update();
+      fw.draw();
+    }
     if (timestamp - phaseStartTime > pauseDuration) {
-      animationPhase = "fireworks";
+      animationPhase = "falling";
       phaseStartTime = timestamp;
+      particles = [];
+      nextPixelIndex = 0;
+      fireworks = [];
     }
   }
-} else if (animationPhase === "fireworks") {
-  // disegna immagine statica
-  for (const p of particles) {
-    p.draw();
-  }
-  // crea nuovi fuochi casuali ogni 0.3s
-  if (!update.lastFireworkTime || timestamp - update.lastFireworkTime > 300) {
-    createFirework();
-    update.lastFireworkTime = timestamp;
-  }
-  // aggiorna e disegna fuochi
-  fireworks = fireworks.filter(fw => fw.alpha > 0);
-  for (const fw of fireworks) {
-    fw.update();
-    fw.draw();
-  }
-  // dopo 5 minuti torna alla caduta
-  if (timestamp - phaseStartTime > pauseDuration) {
-    animationPhase = "falling";
-    phaseStartTime = timestamp;
-    particles = [];
-    nextPixelIndex = 0;
-    fireworks = [];
-  }
-}
 
-requestAnimationFrame(update);
+  requestAnimationFrame(update);
 }
-
 setInterval(createHeart, 700);
 
 const playBtn = document.getElementById("playButton");
