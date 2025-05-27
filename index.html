@@ -127,7 +127,7 @@
       this.targetY = y;
       this.y = 0;  // partono dall'alto
       this.color = color;
-      this.size = 1.5 + Math.random();
+      this.size = 1.2 + Math.random() * 1.5;
       this.speed = 2 + Math.random() * 2;
       this.vx = (Math.random() - 0.5) * 1; // per disperdere dopo
       this.vy = 0;
@@ -141,7 +141,6 @@
           if(this.y > this.targetY) this.y = this.targetY;
         }
       } else if (animationPhase === "disperse") {
-        // si disperdono verso l'alto con trasparenza che cala
         this.x += this.vx;
         this.y -= 1.5 + Math.random();
         this.opacity -= 0.01;
@@ -160,17 +159,17 @@
   function resetParticles() {
     particles = [];
     if (!imgLoaded) return;
-    for (let y = 0; y < imageData.height; y += 6) {
-      for (let x = 0; x < imageData.width; x += 6) {
+    // adesso passo a passo 3 px per pixel (maggiore definizione)
+    for (let y = 0; y < imageData.height; y += 3) {
+      for (let x = 0; x < imageData.width; x += 3) {
         const index = (y * imageData.width + x) * 4;
         const r = imageData.data[index];
         const g = imageData.data[index + 1];
         const b = imageData.data[index + 2];
         const a = imageData.data[index + 3];
-        if (a > 100) {
-          if (Math.random() < 0.3) {
-            particles.push(new Particle(x, y, {r, g, b}));
-          }
+        if (a > 50) { // più basso per più particelle
+          // tolgo random, metto tutte le particelle visibili
+          particles.push(new Particle(x, y, {r, g, b}));
         }
       }
     }
@@ -194,26 +193,21 @@
   function animate(time) {
     ctx.clearRect(0, 0, W, H);
 
-    // Aggiorniamo e disegniamo particelle
     particles.forEach(p => p.update(time));
     particles.forEach(p => p.draw());
 
-    // Controlliamo cambio fase
     if(animationPhase === "falling") {
-      // Controlla se tutte le particelle hanno raggiunto target
       const allArrived = particles.every(p => p.y >= p.targetY);
       if(allArrived) {
         animationPhase = "pause";
         phaseStartTime = time;
       }
     } else if(animationPhase === "pause") {
-      // Aspetta pauseDuration poi passa a disperse
       if(time - phaseStartTime > pauseDuration) {
         animationPhase = "disperse";
         phaseStartTime = time;
       }
     } else if(animationPhase === "disperse") {
-      // Controlla se tutte le particelle sono scomparse
       const allGone = particles.every(p => p.opacity <= 0);
       if(allGone) {
         resetParticles();
@@ -225,7 +219,6 @@
 
   requestAnimationFrame(animate);
 
-  // Musica play button
   const bgMusic = document.getElementById("bgMusic");
   const playButton = document.getElementById("playButton");
 
@@ -234,7 +227,6 @@
     playButton.style.display = "none";
   };
 
-  // Adatta canvas a resize finestra
   window.addEventListener("resize", () => {
     W = canvas.width = window.innerWidth;
     H = canvas.height = window.innerHeight;
