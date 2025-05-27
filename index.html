@@ -58,7 +58,7 @@
       }
     }
 
-    #explodeBtn {
+    #explodeBtn, #playButton {
       position: fixed;
       bottom: 20px;
       left: 50%;
@@ -73,6 +73,10 @@
       cursor: pointer;
       box-shadow: 0 0 10px crimson;
     }
+
+    #playButton {
+      bottom: 80px;
+    }
   </style>
 </head>
 <body>
@@ -80,6 +84,7 @@
 <h1>TI AMO AMORE MIO</h1>
 <canvas id="canvas"></canvas>
 <button id="explodeBtn">Esplodi!</button>
+<button id="playButton">▶️ Ascolta la musica romantica</button>
 
 <audio id="bgMusic" loop>
   <source src="https://cdn.pixabay.com/audio/2023/03/26/audio_5c4fb6faae.mp3" type="audio/mpeg" />
@@ -313,6 +318,7 @@
   setInterval(createHeart, 700);
 
   const explodeBtn = document.getElementById("explodeBtn");
+  const playBtn = document.getElementById("playButton");
   const bgMusic = document.getElementById("bgMusic");
 
   explodeBtn.addEventListener("click", () => {
@@ -340,6 +346,11 @@
         }
       }, 50);
     };
+  });
+
+  playBtn.addEventListener("click", () => {
+    bgMusic.play();
+    playBtn.style.display = "none";
   });
 
   window.addEventListener("resize", () => {
