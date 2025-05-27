@@ -8,10 +8,14 @@
       margin: 0; padding: 0; overflow: hidden; background: black;
       height: 100vh; width: 100vw;
       font-family: Arial, sans-serif;
+      user-select: none;
     }
 
     canvas {
       display: block;
+      position: absolute;
+      top: 0; left: 0;
+      z-index: 0;
     }
 
     h1 {
@@ -25,7 +29,6 @@
       color: red;
       text-shadow: 2px 2px 10px white;
       animation: glow 3s infinite ease-in-out;
-      user-select: none;
     }
 
     @keyframes glow {
@@ -39,7 +42,8 @@
     .heart {
       position: absolute;
       font-size: 20px;
-      animation: float 6s infinite ease-in-out;
+      animation: float 6s linear forwards;
+      pointer-events: none;
       user-select: none;
     }
 
@@ -67,7 +71,6 @@
       border: none;
       border-radius: 10px;
       cursor: pointer;
-      user-select: none;
       box-shadow: 0 0 10px crimson;
     }
   </style>
@@ -90,12 +93,19 @@
   let W = canvas.width = window.innerWidth;
   let H = canvas.height = window.innerHeight;
 
-  let particles = [];
+  const particleSize = 4;
   let imageData;
   let imgLoaded = false;
-  let animationPhase = "falling"; // falling, pause, disperse
+
+  let particles = [];
+  let composedPixels = new Set();
+
+  let animationPhase = "falling";
   let phaseStartTime = null;
-  const pauseDuration = 5 * 60 * 1000; // 5 minuti in ms
+  const pauseDuration = 5 * 60 * 1000; // 5 minuti
+
+  let fireworks = [];
+  let hearts = [];
 
   const img = new Image();
   img.crossOrigin = "anonymous";
@@ -108,47 +118,46 @@
     offCanvas.width = W;
     offCanvas.height = H;
 
-    // Manteniamo proporzioni immagine, dimensione circa 60% larghezza schermo
     const aspectRatio = img.width / img.height;
     const imgWidth = W * 0.6;
     const imgHeight = imgWidth / aspectRatio;
 
     offCtx.drawImage(img, (W - imgWidth) / 2, (H - imgHeight) / 2, imgWidth, imgHeight);
     imageData = offCtx.getImageData(0, 0, W, H);
-    imgLoaded = true;
 
+    imgLoaded = true;
     resetParticles();
     phaseStartTime = performance.now();
+    requestAnimationFrame(update);
   };
 
   class Particle {
-    constructor(x, y, color) {
+    constructor(x, targetY, color) {
       this.x = x;
-      this.targetY = y;
-      this.y = 0;  // partono dall'alto
+      this.targetY = targetY;
+      this.y = 0;
       this.color = color;
-      this.size = 1.5 + Math.random();
-      this.speed = 2 + Math.random() * 2;
-      this.vx = (Math.random() - 0.5) * 1; // per disperdere dopo
-      this.vy = 0;
+      this.size = particleSize - 1 + Math.random() * 2;
+      this.speed = 3 + Math.random() * 3;
       this.opacity = 1;
+      this.isComposed = false;
     }
-
-    update(deltaTime) {
+    update() {
       if (animationPhase === "falling") {
         if (this.y < this.targetY) {
           this.y += this.speed;
-          if(this.y > this.targetY) this.y = this.targetY;
+          if (this.y > this.targetY) {
+            this.y = this.targetY;
+            this.isComposed = true;
+            composedPixels.add(this.x + "," + this.targetY);
+          }
         }
       } else if (animationPhase === "disperse") {
-        // si disperdono verso l'alto con trasparenza che cala
-        this.x += this.vx;
-        this.y -= 1.5 + Math.random();
-        this.opacity -= 0.01;
+        this.y -= 4;
+        this.opacity -= 0.02;
         if (this.opacity < 0) this.opacity = 0;
       }
     }
-
     draw() {
       ctx.fillStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},${this.opacity})`;
       ctx.beginPath();
@@ -157,89 +166,157 @@
     }
   }
 
+  class FireworkParticle {
+    constructor(x, y, color) {
+      this.x = x;
+      this.y = y;
+      this.color = color;
+      this.radius = 2 + Math.random() * 3;
+      this.vx = (Math.random() - 0.5) * 6;
+      this.vy = (Math.random() - 0.5) * 6;
+      this.alpha = 1;
+      this.gravity = 0.05;
+    }
+    update() {
+      this.vx *= 0.95;
+      this.vy += this.gravity;
+      this.x += this.vx;
+      this.y += this.vy;
+      this.alpha -= 0.02;
+      if (this.alpha < 0) this.alpha = 0;
+    }
+    draw() {
+      ctx.fillStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},${this.alpha})`;
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  function createFirework() {
+    const x = Math.random() * W * 0.8 + W * 0.1;
+    const y = Math.random() * H * 0.5 + H * 0.1;
+    const colors = [
+      {r:255,g:0,b:0}, {r:0,g:255,b:255}, {r:255,g:255,b:0},
+      {r:0,g:255,b:0}, {r:255,g:0,b:255}, {r:255,g:165,b:0}
+    ];
+    const baseColor = colors[Math.floor(Math.random() * colors.length)];
+    for(let i=0; i<20; i++){
+      fireworks.push(new FireworkParticle(x, y, baseColor));
+    }
+  }
+
   function resetParticles() {
     particles = [];
+    composedPixels = new Set();
     if (!imgLoaded) return;
-    for (let y = 0; y < imageData.height; y += 3) {  // passo 3 per più definizione
-      for (let x = 0; x < imageData.width; x += 3) {
-        const index = (y * imageData.width + x) * 4;
-        const r = imageData.data[index];
-        const g = imageData.data[index + 1];
-        const b = imageData.data[index + 2];
-        const a = imageData.data[index + 3];
-        if (a > 100) {
-          if (Math.random() < 0.5) {  // 50% di probabilità di creare particella
-            particles.push(new Particle(x, y, {r, g, b}));
-          }
+
+    pixelPoints = [];
+    for (let y = 0; y < imageData.height; y += particleSize) {
+      for (let x = 0; x < imageData.width; x += particleSize) {
+        const i = (y * imageData.width + x) * 4;
+        const a = imageData.data[i + 3];
+        if (a > 50) {
+          const r = imageData.data[i];
+          const g = imageData.data[i + 1];
+          const b = imageData.data[i + 2];
+          pixelPoints.push({x, y, color:{r,g,b}});
         }
       }
     }
+    pixelOrder = pixelPoints;
     animationPhase = "falling";
     phaseStartTime = performance.now();
+    nextPixelIndex = 0;
   }
 
-  // Cuori fluttuanti
-  setInterval(() => {
+  let pixelOrder = [];
+  let nextPixelIndex = 0;
+
+  // Cuori che fluttuano
+  function createHeart() {
     const heart = document.createElement("div");
     heart.className = "heart";
-    heart.innerText = "❤️";
+    heart.textContent = "❤️";
     heart.style.left = Math.random() * W + "px";
-    heart.style.fontSize = (Math.random() * 30 + 10) + "px";
-    heart.style.color = ["red", "pink", "lightblue", "yellow", "green"][Math.floor(Math.random() * 5)];
-    heart.style.top = H + "px";
+    heart.style.fontSize = (15 + Math.random() * 20) + "px";
+    heart.style.color = ["#00ffff", "#ffff00", "#00ff00"][Math.floor(Math.random()*3)];
     document.body.appendChild(heart);
-    setTimeout(() => heart.remove(), 6000);
-  }, 400);
+    hearts.push(heart);
 
-  function animate(time) {
-    ctx.clearRect(0, 0, W, H);
-
-    // Aggiorniamo e disegniamo particelle
-    particles.forEach(p => p.update(time));
-    particles.forEach(p => p.draw());
-
-    // Controlliamo cambio fase
-    if(animationPhase === "falling") {
-      // Controlla se tutte le particelle hanno raggiunto target
-      const allArrived = particles.every(p => p.y >= p.targetY);
-      if(allArrived) {
-        animationPhase = "pause";
-        phaseStartTime = time;
-      }
-    } else if(animationPhase === "pause") {
-      // Aspetta pauseDuration poi passa a disperse
-      if(time - phaseStartTime > pauseDuration) {
-        animationPhase = "disperse";
-        phaseStartTime = time;
-      }
-    } else if(animationPhase === "disperse") {
-      // Controlla se tutte le particelle sono scomparse
-      const allGone = particles.every(p => p.opacity <= 0);
-      if(allGone) {
-        resetParticles();
-      }
-    }
-
-    requestAnimationFrame(animate);
+    setTimeout(() => {
+      heart.remove();
+      hearts = hearts.filter(h => h !== heart);
+    }, 6000);
   }
 
-  requestAnimationFrame(animate);
+  function update(timestamp){
+    ctx.clearRect(0, 0, W, H);
 
-  // Musica play button
-  const bgMusic = document.getElementById("bgMusic");
-  const playButton = document.getElementById("playButton");
+    if (animationPhase === "falling") {
+      for(let i=0; i<10; i++) { // più particelle per frame
+        if (nextPixelIndex < pixelOrder.length) {
+            const p = pixelOrder[nextPixelIndex++];
+            particles.push(new Particle(p.x, p.y, p.color));
+          }
+      }
+    let allComposed = true;
+    for (const p of particles) {
+    p.update();
+    if (!p.isComposed) allComposed = false;
+    }
+    for (const p of particles) p.draw();
+  if (allComposed && nextPixelIndex >= pixelOrder.length) {
+    // dopo 5 minuti passa alla fase di fuochi
+    if (timestamp - phaseStartTime > pauseDuration) {
+      animationPhase = "fireworks";
+      phaseStartTime = timestamp;
+    }
+  }
+} else if (animationPhase === "fireworks") {
+  // disegna immagine statica
+  for (const p of particles) {
+    p.draw();
+  }
+  // crea nuovi fuochi casuali ogni 0.3s
+  if (!update.lastFireworkTime || timestamp - update.lastFireworkTime > 300) {
+    createFirework();
+    update.lastFireworkTime = timestamp;
+  }
+  // aggiorna e disegna fuochi
+  fireworks = fireworks.filter(fw => fw.alpha > 0);
+  for (const fw of fireworks) {
+    fw.update();
+    fw.draw();
+  }
+  // dopo 5 minuti torna alla caduta
+  if (timestamp - phaseStartTime > pauseDuration) {
+    animationPhase = "falling";
+    phaseStartTime = timestamp;
+    particles = [];
+    nextPixelIndex = 0;
+    fireworks = [];
+  }
+}
 
-  playButton.onclick = () => {
-    bgMusic.play();
-    playButton.style.display = "none";
-  };
+requestAnimationFrame(update);
+}
 
-  // Adatta canvas a resize finestra
-  window.addEventListener("resize", () => {
-    W = canvas.width = window.innerWidth;
-    H = canvas.height = window.innerHeight;
-  });
-</script>
+setInterval(createHeart, 700);
 
-</body>
+const playBtn = document.getElementById("playButton");
+const bgMusic = document.getElementById("bgMusic");
+
+playBtn.addEventListener("click", () => {
+bgMusic.play();
+playBtn.style.display = "none";
+});
+
+window.addEventListener("resize", () => {
+W = canvas.width = window.innerWidth;
+H = canvas.height = window.innerHeight;
+resetParticles();
+});
+</script> 
+</body> 
 </html>
