@@ -1,161 +1,177 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-<meta charset="UTF-8" />
-<title>Ti Amo Amore Mio - Fuochi d'artificio foto</title>
-<style>
-  body {
-    margin: 0; height: 100vh; background: #000;
-    display: flex; flex-direction: column; justify-content: center; align-items: center;
-    font-family: 'Arial Black', sans-serif;
-    color: white; text-align: center;
-    overflow: hidden;
-  }
-  h1 {
-    font-size: 6vw;
-    position: relative;
-    z-index: 10;
-    text-shadow: 0 0 20px #ff3c78;
-    margin: 10px 0;
-  }
-  #imageContainer {
-    position: relative;
-    width: 80vw;
-    max-width: 600px;
-    height: auto;
-    z-index: 5;
-    opacity: 0;
-    transition: opacity 1.5s ease;
-  }
-  #imageContainer img {
-    width: 100%;
-    display: block;
-    border-radius: 12px;
-    filter: drop-shadow(0 0 10px #ff3c78);
-  }
-  canvas#confetti {
-    position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    pointer-events: none;
-    z-index: 1;
-  }
-  canvas#imgcanvas {
-    display: none;
-  }
-</style>
+  <meta charset="UTF-8" />
+  <title>Ti Amo Amore Mio</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: black;
+    }
+    canvas {
+      display: block;
+    }
+    #mainImage {
+      display: none;
+    }
+    audio {
+      display: none;
+    }
+  </style>
 </head>
 <body>
-  <h1>TI AMO AMORE MIO ❤️</h1>
+  <canvas id="canvas"></canvas>
+  <img id="mainImage" src="https://raw.githubusercontent.com/MaesTurbo/ti-amo-amore-mio/refs/heads/main/IMG-20200415-WA0007.jpg" alt="Amore Mio" />
+  <audio autoplay loop volume="0.1" id="bgMusic">
+    <source src="https://www.bensound.com/bensound-music/bensound-romantic.mp3" type="audio/mpeg" />
+  </audio>
 
-  <div id="imageContainer">
-    <img id="mainImage" src="https://raw.githubusercontent.com/MaesTurbo/ti-amo-amore-mio/main/IMG-20200415-WA0007.jpg" alt="Amore Mio" />
-  </div>
-
-  <canvas id="confetti"></canvas>
-  <canvas id="imgcanvas"></canvas>
-
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
   <script>
-    const confetti = window.confetti.create(document.getElementById('confetti'), {
-      resize: true,
-      useWorker: true
-    });
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
 
-    const imgCanvas = document.getElementById('imgcanvas');
-    const imgCtx = imgCanvas.getContext('2d');
-    const imageContainer = document.getElementById('imageContainer');
-    const mainImage = document.getElementById('mainImage');
+    const img = document.getElementById("mainImage");
+    let particles = [];
+    let hearts = [];
+    let imgData = null;
+    let drawing = false;
+    let showImage = false;
+    let restartTimeout = 10000;
 
-    const maxWidth = 100;  
-    const maxHeight = 100;
-
-    // Nascondi immagine all'inizio
-    imageContainer.style.opacity = 0;
-
-    function fireworkAt(x, y, color) {
-      confetti({
-        particleCount: 12,
-        startVelocity: 30,
-        spread: 45,
-        origin: { x: x / window.innerWidth, y: y / window.innerHeight },
-        colors: [color],
-        shapes: ['circle'],
-        ticks: 60,
-        scalar: 0.5,
-      });
-    }
-
-    function loadImageAndExplode() {
-      return new Promise((resolve) => {
-        const img = new Image();
-        img.crossOrigin = "anonymous";
-        img.src = mainImage.src;
-
-        img.onload = () => {
-          let scale = Math.min(maxWidth / img.width, maxHeight / img.height);
-          imgCanvas.width = img.width * scale;
-          imgCanvas.height = img.height * scale;
-
-          imgCtx.clearRect(0, 0, imgCanvas.width, imgCanvas.height);
-          imgCtx.drawImage(img, 0, 0, imgCanvas.width, imgCanvas.height);
-
-          const imgData = imgCtx.getImageData(0, 0, imgCanvas.width, imgCanvas.height);
-          const data = imgData.data;
-
-          const points = [];
-          for (let y = 0; y < imgCanvas.height; y++) {
-            for (let x = 0; x < imgCanvas.width; x++) {
-              let idx = (y * imgCanvas.width + x) * 4;
-              let r = data[idx];
-              let g = data[idx + 1];
-              let b = data[idx + 2];
-              let a = data[idx + 3];
-              if (a > 128) {
-                points.push({ x, y, color: `rgb(${r},${g},${b})` });
-              }
-            }
-          }
-
-          let i = 0;
-          function launchBatch() {
-            const batchSize = 12;
-            for (let j = 0; j < batchSize && i < points.length; j++, i++) {
-              let p = points[i];
-              let screenX = p.x / imgCanvas.width * window.innerWidth;
-              let screenY = p.y / imgCanvas.height * window.innerHeight;
-              fireworkAt(screenX, screenY, p.color);
-            }
-            if (i < points.length) {
-              setTimeout(launchBatch, 150);
-            } else {
-              resolve(); // finito il ciclo
-            }
-          }
-          launchBatch();
-        };
-      });
-    }
-
-    async function loopAnimation() {
-      while (true) {
-        imageContainer.style.opacity = 0;    // nascondi immagine
-        await loadImageAndExplode();          // lancia fuochi
-
-        // Mostra immagine piena lentamente
-        imageContainer.style.opacity = 1;
-
-        // Tienila visibile 5 secondi
-        await new Promise(r => setTimeout(r, 5000));
-
-        // Nascondi immagine con dissolvenza
-        imageContainer.style.opacity = 0;
-
-        // Aspetta 2 secondi prima di ricominciare
-        await new Promise(r => setTimeout(r, 2000));
+    // Particle per immagine
+    class Particle {
+      constructor(x, y, color, targetX, targetY) {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.color = color;
+        this.size = Math.random() * 2 + 1;
+        this.targetX = targetX;
+        this.targetY = targetY;
+        this.vx = (targetX - this.x) / 100;
+        this.vy = (targetY - this.y) / 100;
+        this.alpha = 0;
+      }
+      update() {
+        this.x += this.vx;
+        this.y += this.vy;
+        if (this.alpha < 1) this.alpha += 0.01;
+      }
+      draw() {
+        ctx.fillStyle = `rgba(${this.color[0]}, ${this.color[1]}, ${this.color[2]}, ${this.alpha})`;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
       }
     }
 
-    loopAnimation();
+    // Cuori fluttuanti
+    class Heart {
+      constructor() {
+        this.x = Math.random() * canvas.width;
+        this.y = canvas.height + Math.random() * 200;
+        this.size = Math.random() * 20 + 10;
+        this.speed = Math.random() * 1 + 0.5;
+        const colors = ["#ff69b4", "#ff0000", "#00ffff", "#ffff00", "#00ff00"];
+        this.color = colors[Math.floor(Math.random() * colors.length)];
+      }
+      update() {
+        this.y -= this.speed;
+        if (this.y < -this.size) {
+          this.y = canvas.height + Math.random() * 100;
+          this.x = Math.random() * canvas.width;
+        }
+      }
+      draw() {
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.scale(this.size / 20, this.size / 20);
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.bezierCurveTo(0, -3, -5, -3, -5, 0);
+        ctx.bezierCurveTo(-5, 3, 0, 5, 0, 8);
+        ctx.bezierCurveTo(0, 5, 5, 3, 5, 0);
+        ctx.bezierCurveTo(5, -3, 0, -3, 0, 0);
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+
+    function explodeImage() {
+      const tempCanvas = document.createElement("canvas");
+      const tempCtx = tempCanvas.getContext("2d");
+      const scale = 0.5;
+      const imgW = img.width * scale;
+      const imgH = img.height * scale;
+      tempCanvas.width = imgW;
+      tempCanvas.height = imgH;
+
+      tempCtx.drawImage(img, 0, 0, imgW, imgH);
+      imgData = tempCtx.getImageData(0, 0, imgW, imgH).data;
+
+      particles = [];
+      for (let y = 0; y < imgH; y += 3) {
+        for (let x = 0; x < imgW; x += 3) {
+          const i = (y * imgW + x) * 4;
+          const r = imgData[i];
+          const g = imgData[i + 1];
+          const b = imgData[i + 2];
+          const a = imgData[i + 3];
+          if (a > 100) {
+            const posX = canvas.width / 2 - imgW / 2 + x;
+            const posY = canvas.height / 2 - imgH / 2 + y;
+            particles.push(new Particle(posX, posY, [r, g, b], posX, posY));
+          }
+        }
+      }
+
+      drawing = true;
+      showImage = true;
+      setTimeout(() => {
+        drawing = false;
+        showImage = false;
+        setTimeout(explodeImage, 3000);
+      }, restartTimeout);
+    }
+
+    function animate() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Cuori
+      hearts.forEach((h) => {
+        h.update();
+        h.draw();
+      });
+
+      // Particelle immagine
+      if (drawing || showImage) {
+        particles.forEach((p) => {
+          p.update();
+          p.draw();
+        });
+      }
+
+      requestAnimationFrame(animate);
+    }
+
+    // Inizializza cuori
+    for (let i = 0; i < 50; i++) {
+      hearts.push(new Heart());
+    }
+
+    img.onload = () => {
+      explodeImage();
+      animate();
+    };
+
+    // Per autoplay su mobile (richiede interazione)
+    document.body.addEventListener("click", () => {
+      document.getElementById("bgMusic").play();
+    });
   </script>
 </body>
 </html>
