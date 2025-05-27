@@ -9,169 +9,174 @@
       padding: 0;
       overflow: hidden;
       background: black;
+      font-family: 'Arial', sans-serif;
     }
+
     canvas {
       display: block;
     }
-    #mainImage {
-      display: none;
+
+    h1 {
+      position: absolute;
+      top: 20px;
+      width: 100%;
+      text-align: center;
+      color: white;
+      font-size: 4em;
+      z-index: 10;
+      text-shadow: 2px 2px 10px red;
     }
-    audio {
-      display: none;
+
+    .heart {
+      position: absolute;
+      font-size: 20px;
+      color: red;
+      animation: float 6s infinite ease-in-out;
+    }
+
+    @keyframes float {
+      0% {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(-100vh) scale(1.5);
+        opacity: 0;
+      }
     }
   </style>
 </head>
 <body>
+  <h1>TI AMO AMORE MIO</h1>
   <canvas id="canvas"></canvas>
-  <img id="mainImage" src="https://raw.githubusercontent.com/MaesTurbo/ti-amo-amore-mio/refs/heads/main/IMG-20200415-WA0007.jpg" alt="Amore Mio" />
-  <audio autoplay loop volume="0.1" id="bgMusic">
-    <source src="https://www.bensound.com/bensound-music/bensound-romantic.mp3" type="audio/mpeg" />
+  <audio autoplay loop volume="0.1">
+    <source src="https://files.catbox.moe/lww7r1.mp3" type="audio/mpeg">
+    Il tuo browser non supporta l'audio.
   </audio>
 
   <script>
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-
-    const img = document.getElementById("mainImage");
+    let width, height;
     let particles = [];
-    let hearts = [];
-    let imgData = null;
-    let drawing = false;
-    let showImage = false;
-    let restartTimeout = 10000;
+    let imagePoints = [];
+    let imageComposed = false;
+    let composeStartTime = null;
 
-    // Particle per immagine
-    class Particle {
-      constructor(x, y, color, targetX, targetY) {
-        this.x = Math.random() * canvas.width;
-        this.y = Math.random() * canvas.height;
-        this.color = color;
-        this.size = Math.random() * 2 + 1;
-        this.targetX = targetX;
-        this.targetY = targetY;
-        this.vx = (targetX - this.x) / 100;
-        this.vy = (targetY - this.y) / 100;
-        this.alpha = 0;
-      }
-      update() {
-        this.x += this.vx;
-        this.y += this.vy;
-        if (this.alpha < 1) this.alpha += 0.01;
-      }
-      draw() {
-        ctx.fillStyle = `rgba(${this.color[0]}, ${this.color[1]}, ${this.color[2]}, ${this.alpha})`;
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-        ctx.fill();
+    const image = new Image();
+    image.crossOrigin = "anonymous";
+    image.src = "https://raw.githubusercontent.com/MaesTurbo/ti-amo-amore-mio/refs/heads/main/IMG-20200415-WA0007.jpg";
+
+    function resize() {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    }
+
+    window.addEventListener("resize", resize);
+    resize();
+
+    function drawHearts() {
+      const heart = document.createElement("div");
+      heart.className = "heart";
+      heart.innerText = "❤️";
+      heart.style.left = Math.random() * window.innerWidth + "px";
+      heart.style.fontSize = (Math.random() * 20 + 10) + "px";
+      heart.style.color = ["red", "pink", "lightblue", "yellow", "green"][Math.floor(Math.random() * 5)];
+      heart.style.animationDuration = (Math.random() * 4 + 4) + "s";
+      document.body.appendChild(heart);
+      setTimeout(() => heart.remove(), 6000);
+    }
+
+    setInterval(drawHearts, 500);
+
+    function createParticles(x, y) {
+      for (let i = 0; i < 30; i++) {
+        particles.push({
+          x, y,
+          vx: (Math.random() - 0.5) * 4,
+          vy: (Math.random() - 0.5) * 4,
+          alpha: 1,
+          color: `hsl(${Math.random() * 360}, 100%, 50%)`,
+          timer: 0
+        });
       }
     }
 
-    // Cuori fluttuanti
-    class Heart {
-      constructor() {
-        this.x = Math.random() * canvas.width;
-        this.y = canvas.height + Math.random() * 200;
-        this.size = Math.random() * 20 + 10;
-        this.speed = Math.random() * 1 + 0.5;
-        const colors = ["#ff69b4", "#ff0000", "#00ffff", "#ffff00", "#00ff00"];
-        this.color = colors[Math.floor(Math.random() * colors.length)];
-      }
-      update() {
-        this.y -= this.speed;
-        if (this.y < -this.size) {
-          this.y = canvas.height + Math.random() * 100;
-          this.x = Math.random() * canvas.width;
+    function renderParticles() {
+      ctx.clearRect(0, 0, width, height);
+      particles.forEach((p, i) => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.alpha -= 0.01;
+        p.timer++;
+
+        ctx.beginPath();
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = Math.max(p.alpha, 0);
+        ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Draw part of the image as pixel when particles explode
+        if (p.timer === 15 && imagePoints.length > 0 && !imageComposed) {
+          const imgPoint = imagePoints[Math.floor(Math.random() * imagePoints.length)];
+          ctx.globalAlpha = 1;
+          ctx.drawImage(
+            image,
+            imgPoint.x, imgPoint.y, 5, 5,
+            p.x - 2.5, p.y - 2.5, 5, 5
+          );
         }
-      }
-      draw() {
-        ctx.save();
-        ctx.translate(this.x, this.y);
-        ctx.scale(this.size / 20, this.size / 20);
-        ctx.fillStyle = this.color;
-        ctx.beginPath();
-        ctx.moveTo(0, 0);
-        ctx.bezierCurveTo(0, -3, -5, -3, -5, 0);
-        ctx.bezierCurveTo(-5, 3, 0, 5, 0, 8);
-        ctx.bezierCurveTo(0, 5, 5, 3, 5, 0);
-        ctx.bezierCurveTo(5, -3, 0, -3, 0, 0);
-        ctx.fill();
-        ctx.restore();
+
+        if (p.alpha <= 0) particles.splice(i, 1);
+      });
+      ctx.globalAlpha = 1;
+    }
+
+    function loop() {
+      renderParticles();
+      requestAnimationFrame(loop);
+
+      // Restart after 5 minutes
+      if (composeStartTime && Date.now() - composeStartTime > 5 * 60 * 1000) {
+        imageComposed = false;
+        composeStartTime = null;
+        imagePoints = [];
+        ctx.clearRect(0, 0, width, height);
       }
     }
 
-    function explodeImage() {
+    loop();
+
+    function launchFirework() {
+      const x = Math.random() * width * 0.8 + width * 0.1;
+      const y = Math.random() * height * 0.5 + height * 0.2;
+      createParticles(x, y);
+    }
+
+    setInterval(launchFirework, 700);
+
+    image.onload = () => {
       const tempCanvas = document.createElement("canvas");
       const tempCtx = tempCanvas.getContext("2d");
-      const scale = 0.5;
-      const imgW = img.width * scale;
-      const imgH = img.height * scale;
-      tempCanvas.width = imgW;
-      tempCanvas.height = imgH;
+      const scale = 0.25;
+      tempCanvas.width = image.width * scale;
+      tempCanvas.height = image.height * scale;
+      tempCtx.drawImage(image, 0, 0, tempCanvas.width, tempCanvas.height);
+      const data = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
 
-      tempCtx.drawImage(img, 0, 0, imgW, imgH);
-      imgData = tempCtx.getImageData(0, 0, imgW, imgH).data;
-
-      particles = [];
-      for (let y = 0; y < imgH; y += 3) {
-        for (let x = 0; x < imgW; x += 3) {
-          const i = (y * imgW + x) * 4;
-          const r = imgData[i];
-          const g = imgData[i + 1];
-          const b = imgData[i + 2];
-          const a = imgData[i + 3];
-          if (a > 100) {
-            const posX = canvas.width / 2 - imgW / 2 + x;
-            const posY = canvas.height / 2 - imgH / 2 + y;
-            particles.push(new Particle(posX, posY, [r, g, b], posX, posY));
+      for (let y = 0; y < data.height; y += 4) {
+        for (let x = 0; x < data.width; x += 4) {
+          const index = (y * data.width + x) * 4;
+          const alpha = data.data[index + 3];
+          if (alpha > 100) {
+            imagePoints.push({ x: x / scale, y: y / scale });
           }
         }
       }
 
-      drawing = true;
-      showImage = true;
-      setTimeout(() => {
-        drawing = false;
-        showImage = false;
-        setTimeout(explodeImage, 3000);
-      }, restartTimeout);
-    }
-
-    function animate() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      // Cuori
-      hearts.forEach((h) => {
-        h.update();
-        h.draw();
-      });
-
-      // Particelle immagine
-      if (drawing || showImage) {
-        particles.forEach((p) => {
-          p.update();
-          p.draw();
-        });
-      }
-
-      requestAnimationFrame(animate);
-    }
-
-    // Inizializza cuori
-    for (let i = 0; i < 50; i++) {
-      hearts.push(new Heart());
-    }
-
-    img.onload = () => {
-      explodeImage();
-      animate();
+      composeStartTime = Date.now();
+      imageComposed = false;
     };
-
-    // Per autoplay su mobile (richiede interazione)
-    document.body.addEventListener("click", () => {
-      document.getElementById("bgMusic").play();
-    });
   </script>
 </body>
 </html>
