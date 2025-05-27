@@ -44,161 +44,309 @@
       font-size: 20px;
       animation: float 6s linear forwards;
       pointer-events: none;
-      color: red;
+      user-select: none;
     }
 
     @keyframes float {
-      0% { transform: translateY(0); opacity: 1; }
-      100% { transform: translateY(-200px); opacity: 0; }
+      0% {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(-100vh) scale(1.5);
+        opacity: 0;
+      }
     }
 
     #explodeBtn {
-      position: absolute;
+      position: fixed;
       bottom: 20px;
       left: 50%;
       transform: translateX(-50%);
+      z-index: 20;
       padding: 10px 20px;
-      font-size: 1.5em;
-      background: red;
+      font-size: 1.2em;
+      background: crimson;
       color: white;
       border: none;
       border-radius: 10px;
       cursor: pointer;
-      z-index: 20;
-      box-shadow: 0 0 10px white;
+      box-shadow: 0 0 10px crimson;
     }
   </style>
 </head>
 <body>
-  <canvas id="canvas"></canvas>
-  <h1>Ti Amo Amore Mio ❤️</h1>
-  <button id="explodeBtn">Esplodi!</button>
-  <audio id="bgm" loop autoplay volume="0.3">
-    <source src="https://cdn.pixabay.com/audio/2023/03/26/audio_5c4fb6faae.mp3" type="audio/mp3">
-  </audio>
-  <audio id="explosion">
-    <source src="https://cdn.pixabay.com/audio/2022/03/15/audio_a771cc9d3e.mp3" type="audio/mp3">
-  </audio>
 
-  <script>
-    const canvas = document.getElementById('canvas');
-    const ctx = canvas.getContext('2d');
-    let width = canvas.width = window.innerWidth;
-    let height = canvas.height = window.innerHeight;
-    const pixelSize = 5;
-    const hearts = ['❤️','💖','💘','💕','💗','💞'];
+<h1>TI AMO AMORE MIO</h1>
+<canvas id="canvas"></canvas>
+<button id="explodeBtn">Esplodi!</button>
 
-    let imageSrc = "https://raw.githubusercontent.com/MaesTurbo/ti-amo-amore-mio/refs/heads/main/bbb.jpg";
-    let explosionImageSrc = "https://raw.githubusercontent.com/MaesTurbo/ti-amo-amore-mio/refs/heads/main/ccccc.jpg";
+<audio id="bgMusic" loop>
+  <source src="https://cdn.pixabay.com/audio/2023/03/26/audio_5c4fb6faae.mp3" type="audio/mpeg" />
+  Il tuo browser non supporta l'audio.
+</audio>
 
-    let pixels = [];
-    let imageData = null;
-    let composing = true;
+<script>
+  const canvas = document.getElementById("canvas");
+  const ctx = canvas.getContext("2d");
+  let W = canvas.width = window.innerWidth;
+  let H = canvas.height = window.innerHeight;
 
-    const bgm = document.getElementById('bgm');
-    const explosionSound = document.getElementById('explosion');
+  const particleSize = 4;
+  let imageData;
+  let imgLoaded = false;
 
-    const img = new Image();
-    img.crossOrigin = "anonymous";
-    img.src = imageSrc;
+  let particles = [];
+  let composedPixels = new Set();
 
-    function createHearts() {
-      const heart = document.createElement('div');
-      heart.className = 'heart';
-      heart.textContent = hearts[Math.floor(Math.random() * hearts.length)];
-      heart.style.left = Math.random() * width + 'px';
-      heart.style.top = height + 'px';
-      document.body.appendChild(heart);
-      setTimeout(() => heart.remove(), 6000);
+  let animationPhase = "falling";
+  let phaseStartTime = null;
+  const pauseDuration = 5 * 60 * 1000; // 5 minuti
+
+  let fireworks = [];
+  let hearts = [];
+
+  const img = new Image();
+  img.crossOrigin = "anonymous";
+  img.src = "https://raw.githubusercontent.com/MaesTurbo/ti-amo-amore-mio/refs/heads/main/bbb.jpg";
+
+  img.onload = () => {
+    const offCanvas = document.createElement("canvas");
+    const offCtx = offCanvas.getContext("2d");
+
+    offCanvas.width = W;
+    offCanvas.height = H;
+
+    const aspectRatio = img.width / img.height;
+    const imgWidth = W * 0.6;
+    const imgHeight = imgWidth / aspectRatio;
+
+    offCtx.drawImage(img, (W - imgWidth) / 2, (H - imgHeight) / 2, imgWidth, imgHeight);
+    imageData = offCtx.getImageData(0, 0, W, H);
+
+    imgLoaded = true;
+    resetParticles();
+    phaseStartTime = performance.now();
+    requestAnimationFrame(update);
+  };
+
+  class Particle {
+    constructor(x, targetY, color) {
+      this.x = x;
+      this.targetY = targetY;
+      this.y = 0;
+      this.color = color;
+      this.size = particleSize - 1 + Math.random() * 2;
+      this.speed = 3 + Math.random() * 3;
+      this.opacity = 1;
+      this.isComposed = false;
     }
-
-    setInterval(createHearts, 300);
-
-    function createParticles() {
-      pixels = [];
-      if (!imageData) return;
-      for (let y = 0; y < imageData.height; y += pixelSize) {
-        for (let x = 0; x < imageData.width; x += pixelSize) {
-          const index = (y * imageData.width + x) * 4;
-          const r = imageData.data[index];
-          const g = imageData.data[index + 1];
-          const b = imageData.data[index + 2];
-          const a = imageData.data[index + 3];
-          if (a > 128) {
-            const dx = (width / 2 - imageData.width / 2) + x;
-            const dy = -Math.random() * height;
-            pixels.push({ x: dx, y: dy, tx: dx, ty: (height / 2 - imageData.height / 2) + y, r, g, b });
+    update() {
+      if (animationPhase === "falling") {
+        if (this.y < this.targetY) {
+          this.y += this.speed;
+          if (this.y > this.targetY) {
+            this.y = this.targetY;
+            this.isComposed = true;
+            composedPixels.add(this.x + "," + this.targetY);
           }
+        }
+      } else if (animationPhase === "disperse") {
+        this.y -= 4;
+        this.opacity -= 0.02;
+        if (this.opacity < 0) this.opacity = 0;
+      }
+    }
+    draw() {
+      ctx.fillStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},${this.opacity})`;
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  class FireworkParticle {
+    constructor(x, y, color) {
+      this.x = x;
+      this.y = y;
+      this.color = color;
+      this.radius = 2 + Math.random() * 3;
+      this.vx = (Math.random() - 0.5) * 6;
+      this.vy = (Math.random() - 0.5) * 6;
+      this.alpha = 1;
+      this.gravity = 0.05;
+    }
+    update() {
+      this.vx *= 0.95;
+      this.vy += this.gravity;
+      this.x += this.vx;
+      this.y += this.vy;
+      this.alpha -= 0.02;
+      if (this.alpha < 0) this.alpha = 0;
+    }
+    draw() {
+      ctx.fillStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},${this.alpha})`;
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  function createFirework() {
+    const x = Math.random() * W * 0.8 + W * 0.1;
+    const y = Math.random() * H * 0.5 + H * 0.1;
+    const colors = [
+      {r:255,g:0,b:0}, {r:0,g:255,b:255}, {r:255,g:255,b:0},
+      {r:0,g:255,b:0}, {r:255,g:0,b:255}, {r:255,g:165,b:0}
+    ];
+    const baseColor = colors[Math.floor(Math.random() * colors.length)];
+    for(let i=0; i<20; i++){
+      fireworks.push(new FireworkParticle(x, y, baseColor));
+    }
+  }
+
+  function resetParticles() {
+    particles = [];
+    composedPixels = new Set();
+    if (!imgLoaded) return;
+
+    pixelPoints = [];
+    for (let y = 0; y < imageData.height; y += particleSize) {
+      for (let x = 0; x < imageData.width; x += particleSize) {
+        const i = (y * imageData.width + x) * 4;
+        const a = imageData.data[i + 3];
+        if (a > 50) {
+          const r = imageData.data[i];
+          const g = imageData.data[i + 1];
+          const b = imageData.data[i + 2];
+          pixelPoints.push({x, y, color:{r,g,b}});
         }
       }
     }
+    pixelOrder = pixelPoints;
+    animationPhase = "falling";
+    phaseStartTime = performance.now();
+    nextPixelIndex = 0;
+  }
 
-    function drawParticles() {
-      ctx.clearRect(0, 0, width, height);
-      for (let p of pixels) {
-        ctx.fillStyle = `rgb(${p.r},${p.g},${p.b})`;
-        ctx.fillRect(p.x, p.y, pixelSize, pixelSize);
-        p.y += (p.ty - p.y) * 0.05;
-        if (Math.abs(p.y - p.ty) < 1) p.y = p.ty;
+  let pixelOrder = [];
+  let nextPixelIndex = 0;
+
+  // Cuori che fluttuano
+  function createHeart() {
+    const heart = document.createElement("div");
+    heart.className = "heart";
+    heart.textContent = "❤️";
+    heart.style.left = Math.random() * W + "px";
+    heart.style.top = (H + 30) + "px";  // parte da poco sotto il bordo inferiore
+    heart.style.fontSize = (15 + Math.random() * 20) + "px";
+    heart.style.color = ["#00ffff", "#ffff00", "#00ff00"][Math.floor(Math.random()*3)];
+    document.body.appendChild(heart);
+    hearts.push(heart);
+
+    setTimeout(() => {
+      heart.remove();
+      hearts = hearts.filter(h => h !== heart);
+    }, 6000);
+  }
+
+  function update(timestamp){
+    ctx.clearRect(0, 0, W, H);
+
+    if (animationPhase === "falling") {
+      // Aggiungo fuochi d'artificio anche qui
+      if (!update.lastFireworkTime || timestamp - update.lastFireworkTime > 500) {
+        createFirework();
+        update.lastFireworkTime = timestamp;
+      }
+
+      for(let i=0; i<10; i++) {
+        if (nextPixelIndex < pixelOrder.length) {
+          const p = pixelOrder[nextPixelIndex++];
+          particles.push(new Particle(p.x, p.y, p.color));
+        }
+      }
+      let allComposed = true;
+      for (const p of particles) {
+        p.update();
+        if (!p.isComposed) allComposed = false;
+      }
+      for (const p of particles) p.draw();
+
+      fireworks = fireworks.filter(fw => fw.alpha > 0);
+      for (const fw of fireworks) {
+        fw.update();
+        fw.draw();
+      }
+
+      if (allComposed && nextPixelIndex >= pixelOrder.length) {
+        if (timestamp - phaseStartTime > pauseDuration) {
+          animationPhase = "fireworks";
+          phaseStartTime = timestamp;
+        }
+      }
+
+    } else if (animationPhase === "fireworks") {
+      for (const p of particles) {
+        p.draw();
+      }
+      if (!update.lastFireworkTime || timestamp - update.lastFireworkTime > 300) {
+        createFirework();
+        update.lastFireworkTime = timestamp;
+      }
+      fireworks = fireworks.filter(fw => fw.alpha > 0);
+      for (const fw of fireworks) {
+        fw.update();
+        fw.draw();
+      }
+      if (timestamp - phaseStartTime > pauseDuration) {
+        animationPhase = "falling";
+        phaseStartTime = timestamp;
+        particles = [];
+        nextPixelIndex = 0;
+        fireworks = [];
       }
     }
 
-    function animate() {
-      drawParticles();
-      requestAnimationFrame(animate);
+    requestAnimationFrame(update);
+  }
+  setInterval(createHeart, 700);
+
+  const explodeBtn = document.getElementById("explodeBtn");
+  const bgMusic = document.getElementById("bgMusic");
+
+  explodeBtn.addEventListener("click", () => {
+    animationPhase = "disperse";
+    particles = particles.filter(p => !p.isComposed);
+    for (const p of particles) {
+      p.opacity = 1;
     }
-
-    img.onload = function() {
-      const tempCanvas = document.createElement('canvas');
-      const tempCtx = tempCanvas.getContext('2d');
-      tempCanvas.width = img.width;
-      tempCanvas.height = img.height;
-      tempCtx.drawImage(img, 0, 0);
-      imageData = tempCtx.getImageData(0, 0, img.width, img.height);
-      createParticles();
-      animate();
+    const explosionImage = new Image();
+    explosionImage.src = "https://raw.githubusercontent.com/MaesTurbo/ti-amo-amore-mio/refs/heads/main/ccccc.jpg";
+    explosionImage.onload = () => {
+      let scale = 0.1;
+      const interval = setInterval(() => {
+        ctx.clearRect(0, 0, W, H);
+        let w = explosionImage.width * scale;
+        let h = explosionImage.height * scale;
+        ctx.drawImage(explosionImage, W / 2 - w / 2, H / 2 - h / 2, w, h);
+        scale += 0.05;
+        if (scale > 2) {
+          clearInterval(interval);
+          setTimeout(() => {
+            resetParticles();
+            animationPhase = "falling";
+          }, 3000);
+        }
+      }, 50);
     };
+  });
 
-    document.getElementById("explodeBtn").onclick = () => {
-      composing = false;
-      bgm.pause();
-      explosionSound.play();
-      ctx.clearRect(0, 0, width, height);
-      for (let i = 0; i < 300; i++) {
-        const emoji = document.createElement('div');
-        emoji.className = 'heart';
-        emoji.textContent = hearts[Math.floor(Math.random() * hearts.length)];
-        emoji.style.fontSize = (Math.random() * 30 + 10) + 'px';
-        emoji.style.left = Math.random() * width + 'px';
-        emoji.style.top = Math.random() * height + 'px';
-        document.body.appendChild(emoji);
-        setTimeout(() => emoji.remove(), 3000);
-      }
-      const boomImg = new Image();
-      boomImg.src = explosionImageSrc;
-      boomImg.onload = () => {
-        let scale = 0.1;
-        const interval = setInterval(() => {
-          ctx.clearRect(0, 0, width, height);
-          let w = boomImg.width * scale;
-          let h = boomImg.height * scale;
-          ctx.drawImage(boomImg, width / 2 - w / 2, height / 2 - h / 2, w, h);
-          scale += 0.05;
-          if (scale > 2) {
-            clearInterval(interval);
-            setTimeout(() => {
-              bgm.play();
-              img.src = imageSrc;
-            }, 3000);
-          }
-        }, 50);
-      };
-    };
-
-    window.addEventListener('resize', () => {
-      width = canvas.width = window.innerWidth;
-      height = canvas.height = window.innerHeight;
-    });
-  </script>
-</body>
+  window.addEventListener("resize", () => {
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+    resetParticles();
+  });
+</script> 
+</body> 
 </html>
