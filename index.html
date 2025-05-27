@@ -1,63 +1,95 @@
-<script>
-  const confetti = window.confetti.create(document.getElementById('confetti'), {
-    resize: true,
-    useWorker: true
-  });
-
-  function randomBetween(min, max) {
-    return Math.random() * (max - min) + min;
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8" />
+<title>Ti Amo Amore Mio</title>
+<style>
+  body {
+    margin: 0; height: 100vh; background: #000;
+    display: flex; justify-content: center; align-items: center;
+    font-family: 'Arial Black', sans-serif;
+    color: white; text-align: center;
+    overflow: hidden;
   }
+  h1 {
+    font-size: 6vw;
+    z-index: 10;
+    position: relative;
+    text-shadow: 0 0 20px #ff3c78;
+  }
+  canvas {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 1;
+  }
+</style>
+</head>
+<body>
+  <h1>TI AMO AMORE MIO ❤️</h1>
+  <canvas id="confetti"></canvas>
 
-  function fireworkHeartAt(x, y, scale = 1, colors = ['#ff4466', '#ff6699', '#ff2255']) {
-    const count = 100;
-    const angleStep = (2 * Math.PI) / count;
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+  <script>
+    const confetti = window.confetti.create(document.getElementById('confetti'), {
+      resize: true,
+      useWorker: true
+    });
 
-    for (let i = 0; i < count; i++) {
-      let t = i * angleStep;
-      // Forma cuore parametrica (valori base)
-      let heartX = 16 * Math.pow(Math.sin(t), 3);
-      let heartY = 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t);
-
-      confetti({
-        particleCount: 1,
-        startVelocity: randomBetween(10, 30) * scale,
-        spread: 20,
-        origin: {
-          x: (x + heartX * scale) / window.innerWidth,
-          y: (y - heartY * scale) / window.innerHeight,
-        },
-        colors: colors,
-        ticks: 100,
-        shapes: ['circle'],
-        scalar: randomBetween(0.4, 1.2) * scale
-      });
+    function randomBetween(min, max) {
+      return Math.random() * (max - min) + min;
     }
-  }
 
-  function randomColorSet() {
-    const colorSets = [
-      ['#ff4466', '#ff6699', '#ff2255'],  // rosa
-      ['#4fc3f7', '#81d4fa', '#0288d1'],  // azzurro
-      ['#ffeb3b', '#fff176', '#fbc02d'],  // giallo
-      ['#4caf50', '#81c784', '#388e3c']   // verde
-    ];
-    return colorSets[Math.floor(Math.random() * colorSets.length)];
-  }
+    function fireworkHeartAt(x, y, scale = 1, colors = ['#ff4466', '#ff6699', '#ff2255']) {
+      const count = 100;
+      const angleStep = (2 * Math.PI) / count;
 
-  function launchRandomFireworks() {
-    const x = randomBetween(0, window.innerWidth);
-    const y = randomBetween(0, window.innerHeight);
-    const scale = randomBetween(0.5, 1.5);
-    const colors = randomColorSet();
-    fireworkHeartAt(x, y, scale, colors);
-  }
+      for (let i = 0; i < count; i++) {
+        let t = i * angleStep;
+        let heartX = 16 * Math.pow(Math.sin(t), 3);
+        let heartY = 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t);
 
-  // Lancia fuochi d'artificio a intervalli casuali tra 500ms e 2500ms
-  function startRandomFireworks() {
-    launchRandomFireworks();
-    const next = randomBetween(500, 2500);
-    setTimeout(startRandomFireworks, next);
-  }
+        confetti({
+          particleCount: 1,
+          startVelocity: randomBetween(10, 30) * scale,
+          spread: 20,
+          origin: {
+            x: (x + heartX * scale) / window.innerWidth,
+            y: (y - heartY * scale) / window.innerHeight,
+          },
+          colors: colors,
+          ticks: 100,
+          shapes: ['circle'],
+          scalar: randomBetween(0.4, 1.2) * scale
+        });
+      }
+    }
 
-  startRandomFireworks();
-</script>
+    function randomColorSet() {
+      const colorSets = [
+        ['#ff4466', '#ff6699', '#ff2255'],  // rosa
+        ['#4fc3f7', '#81d4fa', '#0288d1'],  // azzurro
+        ['#ffeb3b', '#fff176', '#fbc02d'],  // giallo
+        ['#4caf50', '#81c784', '#388e3c']   // verde
+      ];
+      return colorSets[Math.floor(Math.random() * colorSets.length)];
+    }
+
+    function launchRandomFireworks() {
+      const x = randomBetween(0, window.innerWidth);
+      const y = randomBetween(0, window.innerHeight);
+      const scale = randomBetween(0.5, 1.5);
+      const colors = randomColorSet();
+      fireworkHeartAt(x, y, scale, colors);
+    }
+
+    function startRandomFireworks() {
+      launchRandomFireworks();
+      const next = randomBetween(500, 2500);
+      setTimeout(startRandomFireworks, next);
+    }
+
+    startRandomFireworks();
+  </script>
+</body>
+</html>
