@@ -6,7 +6,7 @@
 <style>
   body {
     margin: 0; height: 100vh; background: #000;
-    display: flex; justify-content: center; align-items: center;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
     font-family: 'Arial Black', sans-serif;
     color: white; text-align: center;
     overflow: hidden;
@@ -16,6 +16,22 @@
     position: relative;
     z-index: 10;
     text-shadow: 0 0 20px #ff3c78;
+    margin: 10px 0;
+  }
+  #imageContainer {
+    position: relative;
+    width: 80vw;
+    max-width: 600px;
+    height: auto;
+    z-index: 5;
+    opacity: 0;
+    transition: opacity 1.5s ease;
+  }
+  #imageContainer img {
+    width: 100%;
+    display: block;
+    border-radius: 12px;
+    filter: drop-shadow(0 0 10px #ff3c78);
   }
   canvas#confetti {
     position: fixed;
@@ -31,9 +47,11 @@
 <body>
   <h1>TI AMO AMORE MIO ❤️</h1>
 
-  <!-- Canvas per i fuochi -->
+  <div id="imageContainer">
+    <img id="mainImage" src="https://raw.githubusercontent.com/MaesTurbo/ti-amo-amore-mio/main/IMG-20200415-WA0007.jpg" alt="Amore Mio" />
+  </div>
+
   <canvas id="confetti"></canvas>
-  <!-- Canvas nascosto per caricare immagine -->
   <canvas id="imgcanvas"></canvas>
 
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
@@ -43,83 +61,101 @@
       useWorker: true
     });
 
-    // Link raw github per immagine (modifica se cambi foto)
-    const imgURL = "https://raw.githubusercontent.com/MaesTurbo/ti-amo-amore-mio/main/IMG-20200415-WA0007.jpg";
-
     const imgCanvas = document.getElementById('imgcanvas');
     const imgCtx = imgCanvas.getContext('2d');
+    const imageContainer = document.getElementById('imageContainer');
+    const mainImage = document.getElementById('mainImage');
 
-    const maxWidth = 100;  // larghezza ridotta per velocità e leggerezza
+    const maxWidth = 100;  
     const maxHeight = 100;
+
+    // Nascondi immagine all'inizio
+    imageContainer.style.opacity = 0;
 
     function fireworkAt(x, y, color) {
       confetti({
-        particleCount: 15,
+        particleCount: 12,
         startVelocity: 30,
         spread: 45,
         origin: { x: x / window.innerWidth, y: y / window.innerHeight },
         colors: [color],
         shapes: ['circle'],
         ticks: 60,
-        scalar: 0.6,
+        scalar: 0.5,
       });
     }
 
     function loadImageAndExplode() {
-      const img = new Image();
-      img.crossOrigin = "anonymous"; // per evitare problemi cors
-      img.src = imgURL;
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.src = mainImage.src;
 
-      img.onload = () => {
-        // Scala canvas immagine per dimensione maxWidth/maxHeight
-        let scale = Math.min(maxWidth / img.width, maxHeight / img.height);
-        imgCanvas.width = img.width * scale;
-        imgCanvas.height = img.height * scale;
+        img.onload = () => {
+          let scale = Math.min(maxWidth / img.width, maxHeight / img.height);
+          imgCanvas.width = img.width * scale;
+          imgCanvas.height = img.height * scale;
 
-        // Disegna immagine scalata
-        imgCtx.drawImage(img, 0, 0, imgCanvas.width, imgCanvas.height);
+          imgCtx.clearRect(0, 0, imgCanvas.width, imgCanvas.height);
+          imgCtx.drawImage(img, 0, 0, imgCanvas.width, imgCanvas.height);
 
-        // Prendi dati pixel immagine
-        const imgData = imgCtx.getImageData(0, 0, imgCanvas.width, imgCanvas.height);
-        const data = imgData.data;
+          const imgData = imgCtx.getImageData(0, 0, imgCanvas.width, imgCanvas.height);
+          const data = imgData.data;
 
-        // Creiamo una lista di punti con coordinate e colore
-        const points = [];
-        for (let y = 0; y < imgCanvas.height; y++) {
-          for (let x = 0; x < imgCanvas.width; x++) {
-            let idx = (y * imgCanvas.width + x) * 4;
-            let r = data[idx];
-            let g = data[idx + 1];
-            let b = data[idx + 2];
-            let a = data[idx + 3];
-            if (a > 128) { // consideriamo pixel non trasparenti
-              points.push({ x, y, color: `rgb(${r},${g},${b})` });
+          const points = [];
+          for (let y = 0; y < imgCanvas.height; y++) {
+            for (let x = 0; x < imgCanvas.width; x++) {
+              let idx = (y * imgCanvas.width + x) * 4;
+              let r = data[idx];
+              let g = data[idx + 1];
+              let b = data[idx + 2];
+              let a = data[idx + 3];
+              if (a > 128) {
+                points.push({ x, y, color: `rgb(${r},${g},${b})` });
+              }
             }
           }
-        }
 
-        // Funzione per lanciare fuochi a gruppi (per non bloccare)
-        let i = 0;
-        function launchBatch() {
-          const batchSize = 10; // quanti fuochi per batch
-          for (let j = 0; j < batchSize && i < points.length; j++, i++) {
-            let p = points[i];
-            // Convertiamo coordinate immagine in coordinate schermo
-            let screenX = p.x / imgCanvas.width * window.innerWidth;
-            let screenY = p.y / imgCanvas.height * window.innerHeight;
-
-            fireworkAt(screenX, screenY, p.color);
+          let i = 0;
+          function launchBatch() {
+            const batchSize = 12;
+            for (let j = 0; j < batchSize && i < points.length; j++, i++) {
+              let p = points[i];
+              let screenX = p.x / imgCanvas.width * window.innerWidth;
+              let screenY = p.y / imgCanvas.height * window.innerHeight;
+              fireworkAt(screenX, screenY, p.color);
+            }
+            if (i < points.length) {
+              setTimeout(launchBatch, 150);
+            } else {
+              resolve(); // finito il ciclo
+            }
           }
-          if (i < points.length) {
-            setTimeout(launchBatch, 200);
-          }
-        }
-
-        launchBatch();
-      };
+          launchBatch();
+        };
+      });
     }
 
-    loadImageAndExplode();
+    async function loopAnimation() {
+      while (true) {
+        imageContainer.style.opacity = 0;    // nascondi immagine
+        await loadImageAndExplode();          // lancia fuochi
+
+        // Mostra immagine piena lentamente
+        imageContainer.style.opacity = 1;
+
+        // Tienila visibile 5 secondi
+        await new Promise(r => setTimeout(r, 5000));
+
+        // Nascondi immagine con dissolvenza
+        imageContainer.style.opacity = 0;
+
+        // Aspetta 2 secondi prima di ricominciare
+        await new Promise(r => setTimeout(r, 2000));
+      }
+    }
+
+    loopAnimation();
   </script>
 </body>
 </html>
