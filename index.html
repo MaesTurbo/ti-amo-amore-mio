@@ -9,7 +9,6 @@
       padding: 0;
       overflow: hidden;
       background: black;
-      font-family: 'Arial', sans-serif;
     }
 
     canvas {
@@ -21,10 +20,21 @@
       top: 20px;
       width: 100%;
       text-align: center;
-      color: white;
       font-size: 4em;
+      font-family: 'Arial', sans-serif;
+      font-weight: bold;
       z-index: 10;
-      text-shadow: 2px 2px 10px red;
+      color: red;
+      text-shadow: 2px 2px 10px white;
+      animation: glow 3s infinite ease-in-out;
+    }
+
+    @keyframes glow {
+      0% { color: red; text-shadow: 0 0 5px red; }
+      25% { color: pink; text-shadow: 0 0 10px pink; }
+      50% { color: orange; text-shadow: 0 0 20px orange; }
+      75% { color: yellow; text-shadow: 0 0 15px yellow; }
+      100% { color: red; text-shadow: 0 0 5px red; }
     }
 
     .heart {
@@ -49,134 +59,118 @@
 <body>
   <h1>TI AMO AMORE MIO</h1>
   <canvas id="canvas"></canvas>
-  <audio autoplay loop volume="0.1">
-    <source src="https://files.catbox.moe/lww7r1.mp3" type="audio/mpeg">
-    Il tuo browser non supporta l'audio.
+
+  <!-- Musica romantica -->
+  <audio autoplay loop id="bgMusic">
+    <source src="https://www.bensound.com/bensound-music/bensound-romantic.mp3" type="audio/mpeg" />
   </audio>
 
   <script>
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
-    let width, height;
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
     let particles = [];
-    let imagePoints = [];
-    let imageComposed = false;
-    let composeStartTime = null;
+    let imageData;
+    let imgLoaded = false;
+    const explosionRadius = 4;
 
-    const image = new Image();
-    image.crossOrigin = "anonymous";
-    image.src = "https://raw.githubusercontent.com/MaesTurbo/ti-amo-amore-mio/refs/heads/main/IMG-20200415-WA0007.jpg";
+    const img = new Image();
+    img.src = "https://raw.githubusercontent.com/MaesTurbo/ti-amo-amore-mio/refs/heads/main/IMG-20200415-WA0007.jpg";
+    img.crossOrigin = "anonymous";
 
-    function resize() {
-      width = canvas.width = window.innerWidth;
-      height = canvas.height = window.innerHeight;
-    }
+    img.onload = () => {
+      const offCanvas = document.createElement("canvas");
+      const offCtx = offCanvas.getContext("2d");
+      offCanvas.width = canvas.width;
+      offCanvas.height = canvas.height;
 
-    window.addEventListener("resize", resize);
-    resize();
+      const aspectRatio = img.width / img.height;
+      const imgWidth = canvas.width * 0.6;
+      const imgHeight = imgWidth / aspectRatio;
+      offCtx.drawImage(img, (canvas.width - imgWidth) / 2, (canvas.height - imgHeight) / 2, imgWidth, imgHeight);
+      imageData = offCtx.getImageData(0, 0, canvas.width, canvas.height);
+      imgLoaded = true;
+    };
 
-    function drawHearts() {
-      const heart = document.createElement("div");
-      heart.className = "heart";
-      heart.innerText = "❤️";
-      heart.style.left = Math.random() * window.innerWidth + "px";
-      heart.style.fontSize = (Math.random() * 20 + 10) + "px";
-      heart.style.color = ["red", "pink", "lightblue", "yellow", "green"][Math.floor(Math.random() * 5)];
-      heart.style.animationDuration = (Math.random() * 4 + 4) + "s";
-      document.body.appendChild(heart);
-      setTimeout(() => heart.remove(), 6000);
-    }
+    class Particle {
+      constructor(x, y, color) {
+        this.x = x;
+        this.y = 0;
+        this.targetY = y;
+        this.color = color;
+        this.size = 1.5 + Math.random();
+        this.speed = 2 + Math.random() * 2;
+      }
 
-    setInterval(drawHearts, 500);
+      update() {
+        if (this.y < this.targetY) {
+          this.y += this.speed;
+        }
+      }
 
-    function createParticles(x, y) {
-      for (let i = 0; i < 30; i++) {
-        particles.push({
-          x, y,
-          vx: (Math.random() - 0.5) * 4,
-          vy: (Math.random() - 0.5) * 4,
-          alpha: 1,
-          color: `hsl(${Math.random() * 360}, 100%, 50%)`,
-          timer: 0
-        });
+      draw() {
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
       }
     }
 
-    function renderParticles() {
-      ctx.clearRect(0, 0, width, height);
-      particles.forEach((p, i) => {
-        p.x += p.vx;
-        p.y += p.vy;
-        p.alpha -= 0.01;
-        p.timer++;
-
-        ctx.beginPath();
-        ctx.fillStyle = p.color;
-        ctx.globalAlpha = Math.max(p.alpha, 0);
-        ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Draw part of the image as pixel when particles explode
-        if (p.timer === 15 && imagePoints.length > 0 && !imageComposed) {
-          const imgPoint = imagePoints[Math.floor(Math.random() * imagePoints.length)];
-          ctx.globalAlpha = 1;
-          ctx.drawImage(
-            image,
-            imgPoint.x, imgPoint.y, 5, 5,
-            p.x - 2.5, p.y - 2.5, 5, 5
-          );
+    function createParticlesFromImage() {
+      if (!imgLoaded || !imageData) return;
+      particles = [];
+      for (let y = 0; y < imageData.height; y += 6) {
+        for (let x = 0; x < imageData.width; x += 6) {
+          const index = (y * imageData.width + x) * 4;
+          const r = imageData.data[index];
+          const g = imageData.data[index + 1];
+          const b = imageData.data[index + 2];
+          const a = imageData.data[index + 3];
+          if (a > 100) {
+            const color = `rgb(${r}, ${g}, ${b})`;
+            if (Math.random() < 0.3) { // sparsi e casuali
+              particles.push(new Particle(x, y, color));
+            }
+          }
         }
-
-        if (p.alpha <= 0) particles.splice(i, 1);
-      });
-      ctx.globalAlpha = 1;
+      }
     }
+
+    function animateParticles() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach(p => {
+        p.update();
+        p.draw();
+      });
+    }
+
+    setInterval(() => {
+      if (imgLoaded) createParticlesFromImage();
+    }, 5000); // ogni 5 sec nuova "esplosione"
 
     function loop() {
-      renderParticles();
+      animateParticles();
       requestAnimationFrame(loop);
-
-      // Restart after 5 minutes
-      if (composeStartTime && Date.now() - composeStartTime > 5 * 60 * 1000) {
-        imageComposed = false;
-        composeStartTime = null;
-        imagePoints = [];
-        ctx.clearRect(0, 0, width, height);
-      }
     }
 
     loop();
 
-    function launchFirework() {
-      const x = Math.random() * width * 0.8 + width * 0.1;
-      const y = Math.random() * height * 0.5 + height * 0.2;
-      createParticles(x, y);
-    }
-
-    setInterval(launchFirework, 700);
-
-    image.onload = () => {
-      const tempCanvas = document.createElement("canvas");
-      const tempCtx = tempCanvas.getContext("2d");
-      const scale = 0.25;
-      tempCanvas.width = image.width * scale;
-      tempCanvas.height = image.height * scale;
-      tempCtx.drawImage(image, 0, 0, tempCanvas.width, tempCanvas.height);
-      const data = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
-
-      for (let y = 0; y < data.height; y += 4) {
-        for (let x = 0; x < data.width; x += 4) {
-          const index = (y * data.width + x) * 4;
-          const alpha = data.data[index + 3];
-          if (alpha > 100) {
-            imagePoints.push({ x: x / scale, y: y / scale });
-          }
-        }
-      }
-
-      composeStartTime = Date.now();
-      imageComposed = false;
-    };
+    // Cuori fluttuanti
+    setInterval(() => {
+      const heart = document.createElement("div");
+      heart.className = "heart";
+      heart.innerText = "❤️";
+      heart.style.left = Math.random() * window.innerWidth + "px";
+      heart.style.fontSize = (Math.random() * 30 + 10) + "px";
+      heart.style.color = ["red", "pink", "lightblue", "yellow", "green"][Math.floor(Math.random() * 5)];
+      heart.style.top = window.innerHeight + "px";
+      document.body.appendChild(heart);
+      setTimeout(() => {
+        heart.remove();
+      }, 6000);
+    }, 300);
   </script>
 </body>
 </html>
