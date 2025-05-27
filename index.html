@@ -256,7 +256,7 @@
 
   if (animationPhase === "falling") {
     // Aggiungo fuochi d'artificio anche qui
-    if (!update.lastFireworkTime || timestamp - update.lastFireworkTime > 500) {
+    if (!update.lastFireworkTime || timestamp - update.lastFireworkTime > 1000) {
       createFirework();
       update.lastFireworkTime = timestamp;
     }
@@ -291,7 +291,7 @@
     for (const p of particles) {
       p.draw();
     }
-    if (!update.lastFireworkTime || timestamp - update.lastFireworkTime > 300) {
+    if (!update.lastFireworkTime || timestamp - update.lastFireworkTime > 800) {
       createFirework();
       update.lastFireworkTime = timestamp;
     }
