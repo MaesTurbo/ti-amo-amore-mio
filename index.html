@@ -88,19 +88,18 @@
       cursor: pointer;
       box-shadow: 0 0 10px crimson;
     }
+  
     @keyframes heartExplode {
-  0% {
-    transform: scale(1) translate(0, 0);
-    opacity: 1;
-  }
-  100% {
-    transform: scale(1.5) translate(
-      calc(200px - 400px * var(--rand-x)), 
-      calc(200px - 400px * var(--rand-y))
-    );
-    opacity: 0;
-  }
-}
+    0% {
+      transform: translate(0, 0) scale(1);
+      opacity: 1;
+    }
+    100% {
+      transform: translate(var(--explode-x), var(--explode-y)) scale(1.5);
+      opacity: 0;
+    }
+    }
+
 
 
   </style>
@@ -289,23 +288,30 @@ function explodeHearts() {
   const sound = document.getElementById('explosionSound');
 
   // Riproduce il suono
-  sound.currentTime = 0; // riavvia se già in corso
+  sound.currentTime = 0;
   sound.play();
+
+  // Punto di esplosione casuale
+  const originX = Math.random() * window.innerWidth;
+  const originY = Math.random() * window.innerHeight;
 
   for (let i = 0; i < numberOfHearts; i++) {
     const heart = document.createElement('div');
     heart.className = 'heart';
     heart.textContent = emojis[Math.floor(Math.random() * emojis.length)];
 
-    const randX = Math.random();
-    const randY = Math.random();
+    const angle = Math.random() * 2 * Math.PI;
+    const distance = Math.random() * 150 + 50; // quanto si allontanano
 
-    heart.style.left = '50vw';
-    heart.style.top = '50vh';
+    const x = Math.cos(angle) * distance;
+    const y = Math.sin(angle) * distance;
 
-    heart.style.setProperty('--rand-x', randX);
-    heart.style.setProperty('--rand-y', randY);
-    heart.style.animation = 'heartExplode 1.5s ease-out forwards';
+    heart.style.left = `${originX}px`;
+    heart.style.top = `${originY}px`;
+
+    heart.style.animation = `heartExplode 1.5s ease-out forwards`;
+    heart.style.setProperty('--explode-x', `${x}px`);
+    heart.style.setProperty('--explode-y', `${y}px`);
     heart.style.fontSize = (Math.random() * 30 + 20) + 'px';
 
     document.body.appendChild(heart);
@@ -315,6 +321,7 @@ function explodeHearts() {
     }, 1500);
   }
 }
+
 
 
 // Aggiungi listener al pulsante
