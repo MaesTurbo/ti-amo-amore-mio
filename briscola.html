@@ -1,0 +1,61 @@
+<!-- File: index.html -->
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <title>Briscola ❤️ Multiplayer</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      background: #f5f0ff;
+    }
+    #status {
+      margin-bottom: 1em;
+      font-size: 1.2em;
+    }
+    button {
+      padding: 1em 2em;
+      font-size: 1em;
+      background: #ff6f91;
+      border: none;
+      color: white;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #ff4f70;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎴 Briscola Online</h1>
+  <div id="status">In attesa di un altro giocatore...</div>
+  <button id="startButton" disabled>Inizia Partita</button>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    const status = document.getElementById("status");
+    const startButton = document.getElementById("startButton");
+
+    socket.on("waiting", () => {
+      status.textContent = "In attesa di un altro giocatore...";
+    });
+
+    socket.on("ready", () => {
+      status.textContent = "Trovato! Pronto per giocare.";
+      startButton.disabled = false;
+    });
+
+    startButton.addEventListener("click", () => {
+      socket.emit("start_game");
+      status.textContent = "Partita iniziata! Distribuisco le carte...";
+    });
+  </script>
+</body>
+</html>
