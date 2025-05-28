@@ -88,6 +88,24 @@
       cursor: pointer;
       box-shadow: 0 0 10px crimson;
     }
+
+
+      #playBriscola {
+      position: fixed;
+      bottom: 160px;
+      left: 75%;
+      transform: translateX(-50%);
+      z-index: 20;
+      padding: 10px 20px;
+      font-size: 1.2em;
+      background: crimson;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      box-shadow: 0 0 10px crimson;
+    }
+    
   
     @keyframes heartExplode {
     0% {
@@ -111,6 +129,9 @@
 
 <button id="playButton">▶️ Ascolta la musica romantica</button>
 <button id="LoveButton">L❤️VE YOU</button>
+  
+<button id="playBriscola">Gioca a Briscola</button>
+
   
 <audio id="explosionSound" src="https://www.soundjay.com/mechanical/sounds/explosion-01.mp3" preload="auto"></audio>
 <audio id="bgMusic" loop>
@@ -322,7 +343,11 @@ function explodeHearts() {
   }
 }
 
-
+    //parte dedicata al pulsante game
+    document.getElementById("playBriscola").onclick = function() {
+    window.open("briscola.html", "_blank");
+    }
+  
 
 // Aggiungi listener al pulsante
 document.getElementById('LoveButton').addEventListener('click', explodeHearts);
