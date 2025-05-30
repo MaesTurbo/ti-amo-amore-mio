@@ -1,143 +1,137 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8">
-  <title>Per la mia campionessa 💖</title>
+  <meta charset="UTF-8" />
+  <title>Amore e Gattini</title>
   <style>
     body {
-      margin: 0;
-      font-family: 'Comic Sans MS', cursive;
-      background-color: #ffe6f0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+      background: #ffdde1;
+      background: linear-gradient(to top, #ffdde1, #ee9ca7);
+      font-family: 'Comic Sans MS', cursive, sans-serif;
       overflow: hidden;
+      text-align: center;
+      color: #660033;
     }
 
-    .hearts {
-      position: absolute;
-      width: 100%;
-      top: 0;
-      z-index: 1;
-      pointer-events: none;
+    h1 {
+      margin-top: 80px;
+      font-size: 40px;
+    }
+
+    #countdown {
+      font-size: 30px;
+      margin: 20px;
+    }
+
+    #loveButton {
+      padding: 15px 30px;
+      font-size: 20px;
+      background-color: pink;
+      border: none;
+      border-radius: 15px;
+      cursor: pointer;
+      display: none;
     }
 
     .heart {
       position: absolute;
-      width: 30px;
-      height: 30px;
-      background-color: pink;
-      clip-path: polygon(50% 0%, 100% 35%, 80% 100%, 50% 80%, 20% 100%, 0% 35%);
-      animation: floatHearts 5s linear infinite;
+      color: red;
+      font-size: 24px;
+      animation: float 5s linear infinite;
     }
 
-    @keyframes floatHearts {
+    @keyframes float {
       0% {
         transform: translateY(0) scale(1);
         opacity: 1;
       }
       100% {
-        transform: translateY(100vh) scale(1.5);
+        transform: translateY(-100vh) scale(1.5);
         opacity: 0;
       }
     }
 
-    .container {
-      z-index: 2;
-      text-align: center;
-      margin-top: 100px;
+    #explorer-cat {
+      position: absolute;
+      top: 80%;
+      left: 0;
+      font-size: 40px;
+      z-index: 5;
+      animation: moveCat 10s linear infinite;
+      transition: left 1s;
     }
 
-    .container img {
-      max-width: 80%;
-      border-radius: 15px;
-      box-shadow: 0 0 20px pink;
-      margin-bottom: 20px;
-    }
-
-    h1 {
-      color: #d63384;
-      font-size: 2em;
-    }
-
-    #countdown {
-      font-size: 1.5em;
-      color: #ff4081;
-      margin-top: 20px;
-    }
-
-    #loveButton {
-      margin-top: 30px;
-      padding: 15px 30px;
-      font-size: 1.2em;
-      background-color: #ff66b2;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      display: none;
-    }
-
-    #loveButton:hover {
-      background-color: #ff3385;
+    @keyframes moveCat {
+      0% { left: 0; }
+      50% { left: 90%; }
+      100% { left: 0; }
     }
   </style>
 </head>
 <body>
-
-  <div class="hearts"></div>
-
-  <div class="container">
-    <img src="https://placekitten.com/400/300" alt="Gattini carini">
-    <h1>In bocca al lupo amore mio 💖 Sei la mia forza!</h1>
-    <div id="countdown"></div>
-    <button id="loveButton" onclick="showPopup()">Clicca qui amore</button>
-  </div>
+  <h1>Ti amo tanto tanto tanto ❤️</h1>
+  <div id="countdown"></div>
+  <button id="loveButton" onclick="showLoveMessage()">Cliccami amore!</button>
+  <div id="explorer-cat">🐱</div>
 
   <script>
-    // Genera cuori fluttuanti
-    const heartsContainer = document.querySelector('.hearts');
-    for (let i = 0; i < 25; i++) {
-      const heart = document.createElement('div');
-      heart.classList.add('heart');
-      heart.style.left = Math.random() * 100 + 'vw';
-      heart.style.animationDuration = (3 + Math.random() * 3) + 's';
-      heart.style.opacity = Math.random();
-      heartsContainer.appendChild(heart);
+    // Cuori fluttuanti
+    function createHeart() {
+      const heart = document.createElement("div");
+      heart.classList.add("heart");
+      heart.textContent = "❤️";
+      heart.style.left = Math.random() * 100 + "vw";
+      heart.style.top = "100vh";
+      heart.style.animationDuration = (2 + Math.random() * 3) + "s";
+      document.body.appendChild(heart);
+
+      setTimeout(() => {
+        heart.remove();
+      }, 5000);
+    }
+    setInterval(createHeart, 300);
+
+    // Countdown
+    const countdownEl = document.getElementById("countdown");
+    const loveButton = document.getElementById("loveButton");
+
+    function updateCountdown() {
+      const now = new Date();
+      const target = new Date();
+      target.setHours(14, 30, 0, 0);
+      if (now > target) {
+        target.setDate(target.getDate() + 1);
+      }
+
+      const diff = target - now;
+      if (diff <= 0) {
+        countdownEl.textContent = "È il tuo momento amore mio! 💖";
+        loveButton.style.display = "inline-block";
+        stopCatAtButton();
+        clearInterval(countdownInterval);
+      } else {
+        const hours = String(Math.floor(diff / 3600000)).padStart(2, '0');
+        const minutes = String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0');
+        const seconds = String(Math.floor((diff % 60000) / 1000)).padStart(2, '0');
+        countdownEl.textContent = `${hours}:${minutes}:${seconds}`;
+      }
     }
 
-    // Countdown fino alle 14:30 di oggi
-    const countdownEl = document.getElementById('countdown');
-    const loveButton = document.getElementById('loveButton');
+    const countdownInterval = setInterval(updateCountdown, 1000);
+    updateCountdown();
 
-    const now = new Date();
-    const target = new Date();
-    target.setHours(14, 30, 0, 0);
-
-    if (now > target) {
-      countdownEl.textContent = "È il tuo momento amore mio! 💖";
-      loveButton.style.display = "inline-block";
-    } else {
-      const interval = setInterval(() => {
-        const now = new Date();
-        const distance = target - now;
-
-        if (distance <= 0) {
-          clearInterval(interval);
-          countdownEl.textContent = "È il tuo momento amore mio! 💖";
-          loveButton.style.display = "inline-block";
-        } else {
-          const h = Math.floor((distance / (1000 * 60 * 60)));
-          const m = Math.floor((distance / (1000 * 60)) % 60);
-          const s = Math.floor((distance / 1000) % 60);
-          countdownEl.textContent = `Countdown: ${h}h ${m}m ${s}s`;
-        }
-      }, 1000);
+    // Gattino esploratore si ferma al pulsante
+    function stopCatAtButton() {
+      const cat = document.getElementById('explorer-cat');
+      cat.style.animation = 'none';
+      const button = document.getElementById('loveButton');
+      const buttonRect = button.getBoundingClientRect();
+      cat.style.left = (buttonRect.left + buttonRect.width / 2 - 20) + 'px';
     }
 
-    function showPopup() {
-      alert("Amore mio, sei stata bravissima! So quanto ti sei impegnata e sono fiero di te. Ti amo tantissimo 💖🐱");
-    }
-  </script>
-</body>
-</html>
+    // Aggiunta di nuovi gattini ogni 20 minuti
+    setInterval(() => {
+      const newCat = document.createElement('div');
+      const emojis = ['🐱', '😺', '😻', '😸', '🐈'];
+      newCat.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+      newCat.styl
