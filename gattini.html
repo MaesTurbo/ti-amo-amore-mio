@@ -48,7 +48,7 @@
       margin-top: 100px;
     }
 
-    .container img {
+    .container img.main-img {
       max-width: 80%;
       border-radius: 15px;
       box-shadow: 0 0 20px pink;
@@ -81,6 +81,31 @@
     #loveButton:hover {
       background-color: #ff3385;
     }
+
+    /* Gattino DVD style */
+    #gattino {
+      position: absolute;
+      width: 100px;
+      height: auto;
+      z-index: 0;
+    }
+
+    /* Popup */
+    #popup {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: #fff0f6;
+      border: 3px solid pink;
+      border-radius: 15px;
+      padding: 30px;
+      text-align: center;
+      box-shadow: 0 0 20px #ff69b4;
+      z-index: 999;
+      font-size: 1.5em;
+    }
   </style>
 </head>
 <body>
@@ -88,14 +113,20 @@
   <div class="hearts"></div>
 
   <div class="container">
-    <img src="https://placekitten.com/400/300" alt="Gattini carini">
+    <img src="https://placekitten.com/400/300" alt="Gattini carini" class="main-img">
     <h1>In bocca al lupo amore mio 💖 Sei la mia forza!</h1>
     <div id="countdown"></div>
     <button id="loveButton" onclick="showPopup()">Clicca qui amore</button>
   </div>
 
+  <!-- Gattino che si muove tipo DVD -->
+  <img src="https://placekitten.com/100/100" id="gattino" alt="Gattino che rimbalza">
+
+  <!-- Popup -->
+  <div id="popup">🐈‍⬛ Sei stata bravissima amore, TI AMO 1000 💖😽</div>
+
   <script>
-    // Genera cuori fluttuanti
+    // Cuori fluttuanti
     const heartsContainer = document.querySelector('.hearts');
     for (let i = 0; i < 25; i++) {
       const heart = document.createElement('div');
@@ -109,7 +140,6 @@
     // Countdown fino alle 14:30 di oggi
     const countdownEl = document.getElementById('countdown');
     const loveButton = document.getElementById('loveButton');
-
     const now = new Date();
     const target = new Date();
     target.setHours(14, 30, 0, 0);
@@ -135,8 +165,35 @@
       }, 1000);
     }
 
+    // Gattino DVD rimbalzo
+    const gattino = document.getElementById("gattino");
+    let x = Math.random() * (window.innerWidth - 100);
+    let y = Math.random() * (window.innerHeight - 100);
+    let dx = 2;
+    let dy = 2;
+
+    function moveGattino() {
+      x += dx;
+      y += dy;
+
+      if (x + 100 > window.innerWidth || x < 0) dx *= -1;
+      if (y + 100 > window.innerHeight || y < 0) dy *= -1;
+
+      gattino.style.left = x + "px";
+      gattino.style.top = y + "px";
+
+      requestAnimationFrame(moveGattino);
+    }
+
+    moveGattino();
+
+    // Popup romantico
     function showPopup() {
-      alert("Amore mio, sei stata bravissima! So quanto ti sei impegnata e sono fiero di te. Ti amo tantissimo 💖🐱");
+      const popup = document.getElementById("popup");
+      popup.style.display = "block";
+      setTimeout(() => {
+        popup.style.display = "none";
+      }, 6000); // 6 secondi
     }
   </script>
 </body>
