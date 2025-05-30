@@ -12,6 +12,7 @@
       flex-direction: column;
       align-items: center;
       overflow: hidden;
+      position: relative;
     }
 
     .hearts {
@@ -48,7 +49,7 @@
       margin-top: 100px;
     }
 
-    .container img.main-img {
+    .container img.main-image {
       max-width: 80%;
       border-radius: 15px;
       box-shadow: 0 0 20px pink;
@@ -82,29 +83,12 @@
       background-color: #ff3385;
     }
 
-    /* Gattino DVD style */
-    #gattino {
+    .cat {
       position: absolute;
-      width: 100px;
-      height: auto;
-      z-index: 0;
-    }
-
-    /* Popup */
-    #popup {
-      display: none;
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background-color: #fff0f6;
-      border: 3px solid pink;
-      border-radius: 15px;
-      padding: 30px;
-      text-align: center;
-      box-shadow: 0 0 20px #ff69b4;
-      z-index: 999;
-      font-size: 1.5em;
+      width: 80px;
+      height: 80px;
+      z-index: 3;
+      pointer-events: none;
     }
   </style>
 </head>
@@ -113,20 +97,14 @@
   <div class="hearts"></div>
 
   <div class="container">
-    <img src="https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif" alt="Gattini carini" class="main-img">
+    <img class="main-image" src="https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif" alt="Gattini carini">
     <h1>In bocca al lupo amore mio 💖 Sei la mia forza!</h1>
     <div id="countdown"></div>
     <button id="loveButton" onclick="showPopup()">Clicca qui amore</button>
   </div>
 
-  <!-- Gattino che si muove tipo DVD -->
-  <img src="https://placecats.com/100/100" id="gattino" alt="Gattino che rimbalza">
-
-  <!-- Popup -->
-  <div id="popup">🐈‍⬛ Sei stata bravissima amore, TI AMO 1000 💖😽</div>
-
   <script>
-    // Cuori fluttuanti
+    // Genera cuori fluttuanti
     const heartsContainer = document.querySelector('.hearts');
     for (let i = 0; i < 25; i++) {
       const heart = document.createElement('div');
@@ -140,9 +118,74 @@
     // Countdown fino alle 14:30 di oggi
     const countdownEl = document.getElementById('countdown');
     const loveButton = document.getElementById('loveButton');
+
     const now = new Date();
     const target = new Date();
     target.setHours(14, 30, 0, 0);
+
+    let catInterval;
+    let moveInterval;
+    let cats = [];
+
+    const catImages = [
+      "https://cdn.pixabay.com/photo/2017/11/09/21/41/cat-2934720_1280.jpg",
+      "https://cdn.pixabay.com/photo/2015/03/27/13/16/cat-694730_1280.jpg",
+      "https://cdn.pixabay.com/photo/2016/02/10/16/37/cat-1192026_1280.jpg",
+      "https://cdn.pixabay.com/photo/2017/02/20/18/03/cat-2083492_1280.jpg",
+      "https://cdn.pixabay.com/photo/2016/11/29/03/53/cat-1866475_1280.jpg",
+      "https://cdn.pixabay.com/photo/2017/02/20/18/03/cat-2083492_1280.jpg",
+      "https://cdn.pixabay.com/photo/2015/03/27/13/16/cat-694730_1280.jpg",
+      "https://cdn.pixabay.com/photo/2016/02/10/16/37/cat-1192026_1280.jpg",
+      "https://cdn.pixabay.com/photo/2017/11/09/21/41/cat-2934720_1280.jpg"
+    ];
+
+    let catIndex = 0;
+
+    function addCat() {
+      if (catIndex >= catImages.length) return;
+      const cat = document.createElement('img');
+      cat.src = catImages[catIndex];
+      cat.classList.add('cat');
+      cat.style.left = Math.random() * (window.innerWidth - 80) + 'px';
+      cat.style.top = Math.random() * (window.innerHeight - 80) + 'px';
+      document.body.appendChild(cat);
+      cats.push({ element: cat, dx: 2, dy: 2 });
+      catIndex++;
+    }
+
+    function moveCats() {
+      cats.forEach(catObj => {
+        const cat = catObj.element;
+        let x = cat.offsetLeft;
+        let y = cat.offsetTop;
+        let dx = catObj.dx;
+        let dy = catObj.dy;
+
+        if (x + dx < 0 || x + dx > window.innerWidth - 80) {
+          dx = -dx;
+        }
+        if (y + dy < 0 || y + dy > window.innerHeight - 80) {
+          dy = -dy;
+        }
+
+        cat.style.left = (x + dx) + 'px';
+        cat.style.top = (y + dy) + 'px';
+
+        catObj.dx = dx;
+        catObj.dy = dy;
+      });
+    }
+
+    function stopCats() {
+      clearInterval(catInterval);
+      clearInterval(moveInterval);
+      const buttonRect = loveButton.getBoundingClientRect();
+      cats.forEach((catObj, index) => {
+        const cat = catObj.element;
+        cat.style.left = (buttonRect.left + index * 85) + 'px';
+        cat.style.top = (buttonRect.top - 100) + 'px';
+      });
+    }
 
     if (now > target) {
       countdownEl.textContent = "È il tuo momento amore mio! 💖";
@@ -156,6 +199,7 @@
           clearInterval(interval);
           countdownEl.textContent = "È il tuo momento amore mio! 💖";
           loveButton.style.display = "inline-block";
+          stopCats();
         } else {
           const h = Math.floor((distance / (1000 * 60 * 60)));
           const m = Math.floor((distance / (1000 * 60)) % 60);
@@ -163,37 +207,14 @@
           countdownEl.textContent = `Countdown: ${h}h ${m}m ${s}s`;
         }
       }, 1000);
+
+      addCat(); // Aggiunge il primo gattino subito
+      catInterval = setInterval(addCat, 10 * 60 * 1000); // Ogni 10 minuti
+      moveInterval = setInterval(moveCats, 20); // Movimento continuo
     }
 
-    // Gattino DVD rimbalzo
-    const gattino = document.getElementById("gattino");
-    let x = Math.random() * (window.innerWidth - 100);
-    let y = Math.random() * (window.innerHeight - 100);
-    let dx = 2;
-    let dy = 2;
-
-    function moveGattino() {
-      x += dx;
-      y += dy;
-
-      if (x + 100 > window.innerWidth || x < 0) dx *= -1;
-      if (y + 100 > window.innerHeight || y < 0) dy *= -1;
-
-      gattino.style.left = x + "px";
-      gattino.style.top = y + "px";
-
-      requestAnimationFrame(moveGattino);
-    }
-
-    moveGattino();
-
-    // Popup romantico
     function showPopup() {
-      const popup = document.getElementById("popup");
-      popup.style.display = "block";
-      setTimeout(() => {
-        popup.style.display = "none";
-      }, 6000); // 6 secondi
+      alert("Amore mio, sei stata bravissima! So quanto ti sei impegnata e sono fiero di te. Ti amo tantissimo 💖🐱");
     }
   </script>
 </body>
