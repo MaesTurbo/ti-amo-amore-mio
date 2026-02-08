@@ -115,13 +115,16 @@
       heartsContainer.appendChild(heart);
     }
 
-    // Countdown fino alle 14:30 di oggi
+    // Countdown fino alle 12:30 di oggi
     const countdownEl = document.getElementById('countdown');
     const loveButton = document.getElementById('loveButton');
 
     const now = new Date();
-    const target = new Date();
-    target.setHours(14, 30, 0, 0);
+    //const target = new Date();
+    //target.setHours(12, 30, 0, 0);
+
+    const target = new Date(2026, 1, 9, 15, 0, 0);
+    
 
     let catInterval;
     let moveInterval;
@@ -214,7 +217,7 @@
     }
 
     function showPopup() {
-      alert("Amore mio, sei stata bravissima! So quanto ti sei impegnata e sono fiero di te. Ti amo tantissimo 💖🐱!! Sta sera ti porto a mangiare una super PIZZA!!");
+      alert("Amore mio, hai pasasto questa settimana super difficile tutta da sola sei stata super mega brava, pero ora è il mio turno per coccolarti e farti stare meglio. A casa spero troverrai la sorpresa che ti ho organizzato 💖🐱. Spero ti piacci amore mio, mi è difficile farti altre cose da cosi lontano ma faro sempre del mio meglio! TI AMO DA MORIRE <3 a tra poco");
     }
   </script>
 </body>
