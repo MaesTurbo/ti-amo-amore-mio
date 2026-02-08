@@ -18,6 +18,17 @@
       z-index: 0;
     }
 
+    <div class="menu-container">
+    <button class="menu-button">☰ Menu</button>
+    <div class="dropdown">
+    <a href="index.html">Home</a>
+    <a href="gattini.html">Gattini</a>
+    <a href="briscola.html">Briscola</a>
+    <a href="palestra.html">Palestra</a>
+    </div>
+    </div>
+
+    
     h1 {
       position: absolute;
       top: 20px;
@@ -134,16 +145,7 @@
     }
     }
 
-    <div class="menu-container">
-  <button class="menu-button">☰ Menu</button>
-  <div class="dropdown">
-    <a href="index.html">Home</a>
-    <a href="gattini.html">Gattini</a>
-    <a href="briscola.html">Briscola</a>
-    <a href="palestra.html">Palestra</a>
-  </div>
-</div>
-
+    
 .menu-container {
   position: fixed;
   top: 20px;
@@ -231,24 +233,9 @@ document.addEventListener('click', (e) => {
   }
 });
 
-    const menuBtn = document.querySelector('.menu-button');
-const dropdown = document.querySelector('.dropdown');
-
-menuBtn.addEventListener('click', () => {
-  if (dropdown.style.display === 'block') {
-    dropdown.style.display = 'none';
-  } else {
-    dropdown.style.display = 'block';
-  }
-});
 
 // Chiudi il menu se clicchi fuori
-document.addEventListener('click', (e) => {
-  if (!menuBtn.contains(e.target) && !dropdown.contains(e.target)) {
-    dropdown.style.display = 'none';
-  }
-});
-
+    
 menuBtn.addEventListener('click', () => {
   dropdown.classList.toggle('show');
 });
@@ -276,7 +263,7 @@ document.addEventListener('click', (e) => {
 
 <button id="gattini">Una sorpresa dolce 🐱💖</button>
 
-  <audio id="explosionSound" src="���d" preload="auto"></audio>
+
   
   
 <audio id="bgMusic" loop>
@@ -611,6 +598,7 @@ resetParticles();
 </script> 
 </body> 
 </html>
+
 
 
 
