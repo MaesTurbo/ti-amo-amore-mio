@@ -203,7 +203,8 @@
   </div>
   </div>
 
-  
+  <audio id="explosionSound" src="explo.mp3" preload="auto"></audio>
+
   
   
 <audio id="bgMusic" loop>
@@ -378,18 +379,18 @@
 function explodeHearts() {
   const numberOfHearts = 100;
   const emojis = ['❤️','💖','💘','💕','💞','💓','💗','💝','💟'];
-  //const sound = document.getElementById('explosionSound');    //cosi funzionava lo stesso
+  const sound = document.getElementById("explosionSound");    //cosi funzionava lo stesso
 
   // Crea audio al momento del click (evita blocchi browser)
-  const sound = new Audio("explo.mp3"); // metti qui il file locale reale
-  sound.play().catch(e => console.log("Errore audio:", e));
+  //const sound = new Audio("explo.mp3"); // metti qui il file locale reale
+  //sound.play().catch(e => console.log("Errore audio:", e));
   
   // Riproduce il suono
-  /*
+  
   
   sound.currentTime = 1;
   sound.play();
-  */
+  
   
   // Punto di esplosione casuale
   const originX = Math.random() * window.innerWidth;
@@ -576,6 +577,7 @@ document.addEventListener('click', (e) => {
 </script> 
 </body> 
 </html>
+
 
 
 
