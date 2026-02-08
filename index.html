@@ -150,8 +150,10 @@
 
 <button id="gattini">Una sorpresa dolce 🐱💖</button>
 
+  <audio id="explosionSound" src="sounds/explosion.mp3"></audio>
 
-<audio id="explosionSound">
+  
+<audio id="explosionSoundExtras">
   <source src="https://cdn.pixabay.com/download/audio/2021/08/04/audio_395fbbb06b.mp3?filename=explosion-2-6291.mp3" type="audio/mpeg">
 </audio>
   
@@ -329,6 +331,7 @@ function explodeHearts() {
   const emojis = ['❤️','💖','💘','💕','💞','💓','💗','💝','💟'];
   const sound = document.getElementById('explosionSound');
 
+  
   // Riproduce il suono
   sound.currentTime = 0;
   sound.play();
@@ -458,6 +461,7 @@ resetParticles();
 </script> 
 </body> 
 </html>
+
 
 
 
