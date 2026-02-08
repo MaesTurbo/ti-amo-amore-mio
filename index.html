@@ -134,7 +134,133 @@
     }
     }
 
+    <div class="menu-container">
+  <button class="menu-button">☰ Menu</button>
+  <div class="dropdown">
+    <a href="index.html">Home</a>
+    <a href="gattini.html">Gattini</a>
+    <a href="briscola.html">Briscola</a>
+    <a href="palestra.html">Palestra</a>
+  </div>
+</div>
 
+.menu-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 50;
+}
+
+.menu-button {
+  background-color: crimson;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1em;
+}
+
+.dropdown {
+  display: none; /* nascosto di default */
+  position: absolute;
+  right: 0;
+  top: 40px;
+  background-color: white;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.dropdown a {
+  display: block;
+  padding: 10px 15px;
+  color: crimson;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.dropdown {
+  display: block; /* serve per la transizione */
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: all 0.3s ease;
+  pointer-events: none;
+}
+
+.dropdown.show {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+  .dropdown {
+  display: block; /* serve per la transizione */
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: all 0.3s ease;
+  pointer-events: none;
+}
+
+.dropdown.show {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+    
+.dropdown a:hover {
+  background-color: #ffe6f0;
+}
+
+const menuBtn = document.querySelector('.menu-button');
+const dropdown = document.querySelector('.dropdown');
+
+menuBtn.addEventListener('click', () => {
+  if (dropdown.style.display === 'block') {
+    dropdown.style.display = 'none';
+  } else {
+    dropdown.style.display = 'block';
+  }
+});
+
+// Chiudi il menu se clicchi fuori
+document.addEventListener('click', (e) => {
+  if (!menuBtn.contains(e.target) && !dropdown.contains(e.target)) {
+    dropdown.style.display = 'none';
+  }
+});
+
+    const menuBtn = document.querySelector('.menu-button');
+const dropdown = document.querySelector('.dropdown');
+
+menuBtn.addEventListener('click', () => {
+  if (dropdown.style.display === 'block') {
+    dropdown.style.display = 'none';
+  } else {
+    dropdown.style.display = 'block';
+  }
+});
+
+// Chiudi il menu se clicchi fuori
+document.addEventListener('click', (e) => {
+  if (!menuBtn.contains(e.target) && !dropdown.contains(e.target)) {
+    dropdown.style.display = 'none';
+  }
+});
+
+menuBtn.addEventListener('click', () => {
+  dropdown.classList.toggle('show');
+});
+
+document.addEventListener('click', (e) => {
+  if (!menuBtn.contains(e.target) && !dropdown.contains(e.target)) {
+    dropdown.classList.remove('show');
+  }
+});
+
+
+    
 
   </style>
 </head>
@@ -485,6 +611,7 @@ resetParticles();
 </script> 
 </body> 
 </html>
+
 
 
 
