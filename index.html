@@ -327,13 +327,19 @@
 function explodeHearts() {
   const numberOfHearts = 100;
   const emojis = ['❤️','💖','💘','💕','💞','💓','💗','💝','💟'];
-  const sound = document.getElementById('explosionSound');
+  //const sound = document.getElementById('explosionSound');    //cosi funzionava lo stesso
 
+  // Crea audio al momento del click (evita blocchi browser)
+  const sound = new Audio("https://github.com/MaesTurbo/ti-amo-amore-mio/blob/main/explo.mp3"); // metti qui il file locale reale
+  sound.play().catch(e => console.log("Errore audio:", e));
   
   // Riproduce il suono
+  /*
+  
   sound.currentTime = 1;
   sound.play();
-
+  */
+  
   // Punto di esplosione casuale
   const originX = Math.random() * window.innerWidth;
   const originY = Math.random() * window.innerHeight;
@@ -361,7 +367,7 @@ function explodeHearts() {
 
     setTimeout(() => {
       heart.remove();
-    }, 1500);
+    }, 3000);
   }
 }
 
@@ -459,6 +465,7 @@ resetParticles();
 </script> 
 </body> 
 </html>
+
 
 
 
