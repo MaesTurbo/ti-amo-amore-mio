@@ -150,7 +150,7 @@
 
 <button id="gattini">Una sorpresa dolce 🐱💖</button>
 
-  <audio id="explosionSound" src="https://github.com/MaesTurbo/ti-amo-amore-mio/blob/main/explo.mp3"></audio>
+  <audio id="explosionSound" src="explo.mp3"></audio>
 
   
 
@@ -182,7 +182,7 @@
 
   const img = new Image();
   img.crossOrigin = "anonymous";
-  img.src = "https://raw.githubusercontent.com/MaesTurbo/ti-amo-amore-mio/refs/heads/main/me_e_te.jpg";
+  img.src = "me_e_te.jpg";
 
   img.onload = () => {
     const offCanvas = document.createElement("canvas");
@@ -330,7 +330,7 @@ function explodeHearts() {
   //const sound = document.getElementById('explosionSound');    //cosi funzionava lo stesso
 
   // Crea audio al momento del click (evita blocchi browser)
-  const sound = new Audio("https://github.com/MaesTurbo/ti-amo-amore-mio/blob/main/explo.mp3"); // metti qui il file locale reale
+  const sound = new Audio("explo.mp3"); // metti qui il file locale reale
   sound.play().catch(e => console.log("Errore audio:", e));
   
   // Riproduce il suono
@@ -465,6 +465,7 @@ resetParticles();
 </script> 
 </body> 
 </html>
+
 
 
 
