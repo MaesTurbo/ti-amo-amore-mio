@@ -18,16 +18,7 @@
       z-index: 0;
     }
 
-    <div class="menu-container">
-    <button class="menu-button">☰ Menu</button>
-    <div class="dropdown">
-    <a href="index.html">Home</a>
-    <a href="gattini.html">Gattini</a>
-    <a href="briscola.html">Briscola</a>
-    <a href="palestra.html">Palestra</a>
-    </div>
-    </div>
-
+    
     
     h1 {
       position: absolute;
@@ -164,7 +155,11 @@
 }
 
 .dropdown {
-  display: none; /* nascosto di default */
+  display: block; /* serve per la transizione */
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: all 0.3s ease;
+  pointer-events: none;
   position: absolute;
   right: 0;
   top: 40px;
@@ -174,79 +169,13 @@
   overflow: hidden;
 }
 
-.dropdown a {
-  display: block;
-  padding: 10px 15px;
-  color: crimson;
-  text-decoration: none;
-  font-weight: bold;
-}
-
-.dropdown {
-  display: block; /* serve per la transizione */
-  opacity: 0;
-  transform: translateY(-10px);
-  transition: all 0.3s ease;
-  pointer-events: none;
-}
-
 .dropdown.show {
   opacity: 1;
   transform: translateY(0);
   pointer-events: auto;
 }
 
-  .dropdown {
-  display: block; /* serve per la transizione */
-  opacity: 0;
-  transform: translateY(-10px);
-  transition: all 0.3s ease;
-  pointer-events: none;
-}
-
-.dropdown.show {
-  opacity: 1;
-  transform: translateY(0);
-  pointer-events: auto;
-}
-
-    
-.dropdown a:hover {
-  background-color: #ffe6f0;
-}
-
-const menuBtn = document.querySelector('.menu-button');
-const dropdown = document.querySelector('.dropdown');
-
-menuBtn.addEventListener('click', () => {
-  if (dropdown.style.display === 'block') {
-    dropdown.style.display = 'none';
-  } else {
-    dropdown.style.display = 'block';
-  }
-});
-
-// Chiudi il menu se clicchi fuori
-document.addEventListener('click', (e) => {
-  if (!menuBtn.contains(e.target) && !dropdown.contains(e.target)) {
-    dropdown.style.display = 'none';
-  }
-});
-
-
-// Chiudi il menu se clicchi fuori
-    
-menuBtn.addEventListener('click', () => {
-  dropdown.classList.toggle('show');
-});
-
-document.addEventListener('click', (e) => {
-  if (!menuBtn.contains(e.target) && !dropdown.contains(e.target)) {
-    dropdown.classList.remove('show');
-  }
-});
-
-
+ 
     
 
   </style>
@@ -264,6 +193,17 @@ document.addEventListener('click', (e) => {
 <button id="gattini">Una sorpresa dolce 🐱💖</button>
 
 
+  <div class="menu-container">
+  <button class="menu-button">☰ Menu</button>
+  <div class="dropdown">
+  <a href="index.html">Home</a>
+  <a href="gattini.html">Gattini</a>
+  <a href="briscola.html">Briscola</a>
+  <a href="palestra.html">Palestra</a>
+  </div>
+  </div>
+
+  
   
   
 <audio id="bgMusic" loop>
@@ -595,9 +535,48 @@ W = canvas.width = window.innerWidth;
 H = canvas.height = window.innerHeight;
 resetParticles();
 });
+
+
+
+  
+const menuBtn = document.querySelector('.menu-button');
+const dropdown = document.querySelector('.dropdown');
+
+menuBtn.addEventListener('click', () => {
+  if (dropdown.style.display === 'block') {
+    dropdown.style.display = 'none';
+  } else {
+    dropdown.style.display = 'block';
+  }
+});
+
+// Chiudi il menu se clicchi fuori
+document.addEventListener('click', (e) => {
+  if (!menuBtn.contains(e.target) && !dropdown.contains(e.target)) {
+    dropdown.style.display = 'none';
+  }
+});
+
+
+// Chiudi il menu se clicchi fuori
+    
+menuBtn.addEventListener('click', () => {
+  dropdown.classList.toggle('show');
+});
+
+document.addEventListener('click', (e) => {
+  if (!menuBtn.contains(e.target) && !dropdown.contains(e.target)) {
+    dropdown.classList.remove('show');
+  }
+});
+  
+
+  
+  
 </script> 
 </body> 
 </html>
+
 
 
 
