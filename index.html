@@ -366,6 +366,28 @@ function explodeHearts() {
     setTimeout(() => {
       heart.remove();
     }, 3000);
+    // **Gattino al centro**
+  const cat = document.createElement('img');
+  cat.src = "https://raw.githubusercontent.com/MaesTurbo/ti-amo-amore-mio/main/gatto.jpg"; // assicurati che il file sia nella stessa cartella dell'HTML
+  cat.style.position = "fixed";
+  cat.style.left = "50%";
+  cat.style.top = "50%";
+  cat.style.transform = "translate(-50%, -50%)";
+  cat.style.width = "200px"; // puoi cambiare dimensione
+  cat.style.height = "auto";
+  cat.style.opacity = "1";
+  cat.style.transition = "opacity 1s ease-out";
+  cat.style.zIndex = "30"; // sopra tutto
+
+  document.body.appendChild(cat);
+
+  // Fai svanire gradualmente
+  setTimeout(() => {
+    cat.style.opacity = "0";
+  }, 100); // inizia il fade subito dopo 0.1s
+  setTimeout(() => {
+    cat.remove();
+  }, 1100); // rimuove dopo 1.1 secondi
   }
 }
 
@@ -463,6 +485,7 @@ resetParticles();
 </script> 
 </body> 
 </html>
+
 
 
 
