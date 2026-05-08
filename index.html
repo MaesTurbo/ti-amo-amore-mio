@@ -13,7 +13,7 @@
 
     canvas {
       display: block;
-      position: absolute;
+      position: absolute;  
       top: 0; left: 0;
       z-index: 0;
     }
@@ -379,12 +379,12 @@
 function explodeHearts() {
   const numberOfHearts = 100;
   const emojis = ['❤️','💖','💘','💕','💞','💓','💗','💝','💟'];
-  const sound = document.getElementById("explosionSound");    //cosi funzionava lo stesso
+  //const sound = document.getElementById("explosionSound");    //cosi funzionava lo stesso
 
-  // Crea audio al momento del click (evita blocchi browser)
-  //const sound = new Audio("explo.mp3"); // metti qui il file locale reale
-  //sound.play().catch(e => console.log("Errore audio:", e));
   
+  // Crea audio al momento del click (evita blocchi browser)
+  const sound = new Audio("explo.mp3"); // metti qui il file locale reale
+  //sound.play().catch(e => console.log("Errore audio:", e));
   // Riproduce il suono
   
   
