@@ -416,12 +416,11 @@ function explodeHearts() {
     heart.style.fontSize = (Math.random() * 30 + 20) + 'px';
 
     document.body.appendChild(heart);
-
-    /*
+    
     setTimeout(() => {
       heart.remove();
     }, 3000);
-    */
+    
     
     // **Gattino al centro**
   const cat = document.createElement('img');
@@ -437,8 +436,6 @@ function explodeHearts() {
   cat.style.zIndex = "30"; // sopra tutto
 
   document.body.appendChild(cat);
-
-/*
     
   // Fai svanire gradualmente
   setTimeout(() => {
@@ -449,8 +446,6 @@ function explodeHearts() {
   }, 1100); // rimuove dopo 1.1 secondi
   }
 }
-
-*/
     //parte dedicata al pulsante game
     document.getElementById("playBriscola").onclick = function() {
     window.open("briscola.html", "_blank");
