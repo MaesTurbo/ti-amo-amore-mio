@@ -207,6 +207,8 @@ h1 {
 <script>
 const menuBtn = document.querySelector('.menu-button');
 const dropdown = document.querySelector('.dropdown');
+let selectedDate = null;
+
 
 menuBtn.addEventListener('click', () => {
   dropdown.classList.toggle('show');
@@ -236,6 +238,8 @@ for (let i = 0; i < firstDay; i++) {
   calendar.appendChild(empty);
 }
 
+colorDays();
+  
 // Creo i giorni
 for (let d = 1; d <= daysInMonth; d++) {
   const day = document.createElement("div");
@@ -248,9 +252,23 @@ day.addEventListener("click", () => {
   document.querySelectorAll(".day").forEach(el => el.classList.remove("selected"));
   day.classList.add("selected");
 
+  const panel = document.getElementById("workoutPanel");
   panel.classList.remove("hidden");
 
-  console.log("Giorno selezionato:", d);
+  selectedDate = `${year}-${month}-${d}`;
+
+  // Carica dati se esistono
+  const data = JSON.parse(localStorage.getItem("workouts")) || {};
+
+  if (data[selectedDate]) {
+    document.getElementById("glutei").value = data[selectedDate].glutei;
+    document.getElementById("schiena").value = data[selectedDate].schiena;
+    document.getElementById("warmup").value = data[selectedDate].warmup;
+  } else {
+    document.getElementById("glutei").value = 0;
+    document.getElementById("schiena").value = 0;
+    document.getElementById("warmup").value = 0;
+  }
 });
 
   calendar.appendChild(day);
@@ -261,8 +279,34 @@ document.getElementById("saveWorkout").addEventListener("click", () => {
   const s = document.getElementById("schiena").value;
   const w = document.getElementById("warmup").value;
 
-  alert(`Salvato:\nGlutei: ${g}%\nSchiena: ${s}%\nWarmup: ${w}%`);
+  const data = JSON.parse(localStorage.getItem("workouts")) || {};
+
+  data[selectedDate] = {
+    glutei: g,
+    schiena: s,
+    warmup: w
+  };
+
+  localStorage.setItem("workouts", JSON.stringify(data));
+
+  colorDays();
+
+  alert("Allenamento salvato 💪");
 });
+
+
+function colorDays() {
+  const data = JSON.parse(localStorage.getItem("workouts")) || {};
+
+  document.querySelectorAll(".day").forEach(day => {
+    const d = day.textContent;
+    const key = `${year}-${month}-${d}`;
+
+    if (data[key]) {
+      day.classList.add("done");
+    }
+  });
+}
 
 </script>
 
