@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<title>Palestra 💪</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial;
+  background: linear-gradient(to bottom, #ff9a9e, #fad0c4);
+  text-align: center;
+}
+
+/* MENU (riutilizzato) */
+.menu-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+}
+
+.menu-button {
+  background: crimson;
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.dropdown {
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: 0.3s;
+  pointer-events: none;
+  position: absolute;
+  right: 0;
+  top: 40px;
+  background: white;
+  border-radius: 8px;
+}
+
+.dropdown.show {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.dropdown a {
+  display: block;
+  padding: 10px;
+  text-decoration: none;
+  color: crimson;
+}
+
+/* CONTENUTO */
+h1 {
+  margin-top: 100px;
+  font-size: 3em;
+  color: crimson;
+}
+
+.exercise {
+  background: white;
+  margin: 20px auto;
+  padding: 20px;
+  width: 200px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.exercise:hover {
+  transform: scale(1.1);
+}
+</style>
+</head>
+
+<body>
+
+<!-- MENU -->
+<div class="menu-container">
+  <button class="menu-button">☰</button>
+  <div class="dropdown">
+    <a href="index.html">Home</a>
+    <a href="gattini.html">Gattini</a>
+    <a href="briscola.html">Briscola</a>
+  </div>
+</div>
+
+<h1>Alleniamoci insieme 💪❤️</h1>
+
+<div class="exercise">Petto</div>
+<div class="exercise">Schiena</div>
+<div class="exercise">Gambe</div>
+
+<script>
+const menuBtn = document.querySelector('.menu-button');
+const dropdown = document.querySelector('.dropdown');
+
+menuBtn.addEventListener('click', () => {
+  dropdown.classList.toggle('show');
+});
+
+document.addEventListener('click', (e) => {
+  if (!menuBtn.contains(e.target) && !dropdown.contains(e.target)) {
+    dropdown.classList.remove('show');
+  }
+});
+</script>
+
+</body>
+</html>
