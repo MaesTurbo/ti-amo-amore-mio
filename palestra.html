@@ -12,6 +12,27 @@ body {
   text-align: center;
 }
 
+.day {
+  background: white;
+  padding: 15px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.day:hover {
+  transform: scale(1.1);
+}
+
+.day.selected {
+  background: crimson;
+  color: white;
+}
+
+.day.done {
+  background: lightgreen;
+}
+
 /* MENU (riutilizzato) */
 .menu-container {
   position: fixed;
@@ -73,6 +94,16 @@ h1 {
 .exercise:hover {
   transform: scale(1.1);
 }
+
+#calendar {
+  width: 90%;
+  max-width: 600px;
+  margin: 50px auto;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 10px;
+}
+
 </style>
 </head>
 
@@ -89,6 +120,8 @@ h1 {
 </div>
 
 <h1>Alleniamoci insieme 💪❤️</h1>
+
+<div id="calendar"></div>
 
 <div class="exercise">Petto</div>
 <div class="exercise">Schiena</div>
@@ -107,6 +140,41 @@ document.addEventListener('click', (e) => {
     dropdown.classList.remove('show');
   }
 });
+
+const calendar = document.getElementById("calendar");
+
+const today = new Date();
+const year = today.getFullYear();
+const month = today.getMonth();
+
+// Numero giorni nel mese
+const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+// Giorno della settimana di inizio (0 = domenica)
+const firstDay = new Date(year, month, 1).getDay();
+
+// Creo spazi vuoti iniziali
+for (let i = 0; i < firstDay; i++) {
+  const empty = document.createElement("div");
+  calendar.appendChild(empty);
+}
+
+// Creo i giorni
+for (let d = 1; d <= daysInMonth; d++) {
+  const day = document.createElement("div");
+  day.classList.add("day");
+  day.textContent = d;
+
+  day.addEventListener("click", () => {
+    document.querySelectorAll(".day").forEach(el => el.classList.remove("selected"));
+    day.classList.add("selected");
+
+    console.log("Giorno selezionato:", d);
+  });
+
+  calendar.appendChild(day);
+}
+  
 </script>
 
 </body>
