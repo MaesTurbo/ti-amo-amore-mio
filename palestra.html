@@ -134,6 +134,36 @@ h1 {
   background: lightgreen;
 }
 
+
+#workoutPanel {
+  margin-top: 30px;
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  width: 250px;
+  text-align: center;
+  box-shadow: 0 0 10px rgba(0,0,0,0.2);
+}
+
+.hidden {
+  display: none;
+}
+
+#workoutPanel input {
+  width: 80%;
+  margin: 5px 0 10px 0;
+  padding: 5px;
+}
+
+#saveWorkout {
+  background: crimson;
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
 </style>
 </head>
 
@@ -155,6 +185,22 @@ h1 {
   
 <div class="container">
   <div id="calendar"></div>
+
+  <div id="workoutPanel" class="hidden">
+    <h2>Imposta allenamento 💪</h2>
+
+    <label>Glutei (%)</label>
+    <input type="number" id="glutei" value="0">
+
+    <label>Schiena (%)</label>
+    <input type="number" id="schiena" value="0">
+
+    <label>Riscaldamento (%)</label>
+    <input type="number" id="warmup" value="0">
+
+  <button id="saveWorkout">Salva</button>
+</div>
+
 </div>
   
   
@@ -196,15 +242,27 @@ for (let d = 1; d <= daysInMonth; d++) {
   day.classList.add("day");
   day.textContent = d;
 
-  day.addEventListener("click", () => {
-    document.querySelectorAll(".day").forEach(el => el.classList.remove("selected"));
-    day.classList.add("selected");
+  const panel = document.getElementById("workoutPanel");
 
-    console.log("Giorno selezionato:", d);
-  });
+day.addEventListener("click", () => {
+  document.querySelectorAll(".day").forEach(el => el.classList.remove("selected"));
+  day.classList.add("selected");
+
+  panel.classList.remove("hidden");
+
+  console.log("Giorno selezionato:", d);
+});
 
   calendar.appendChild(day);
 }
+
+document.getElementById("saveWorkout").addEventListener("click", () => {
+  const g = document.getElementById("glutei").value;
+  const s = document.getElementById("schiena").value;
+  const w = document.getElementById("warmup").value;
+
+  alert(`Salvato:\nGlutei: ${g}%\nSchiena: ${s}%\nWarmup: ${w}%`);
+});
 
 </script>
 
