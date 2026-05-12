@@ -278,7 +278,10 @@ function createExercise(name = "", percent = 0) {
   updateAddButton();
 }
 
-  
+  document.getElementById("addExercise").addEventListener("click", () => {
+    createExercise();
+    updateAddButton(); // 🔥 aggiungi anche qui
+  });
 
 // SALVA
 document.getElementById("saveWorkout").addEventListener("click", () => {
@@ -356,6 +359,7 @@ if (data[selectedDate]) {
 } else {
   createExercise();
 }
+  updateAddButton();
 }
 
 // COLORA GIORNI
