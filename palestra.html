@@ -12,28 +12,6 @@ body {
   text-align: center;
 }
 
-.day {
-  background: white;
-  padding: 15px;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: 0.2s;
-}
-
-.day:hover {
-  transform: scale(1.1);
-}
-
-.day.selected {
-  background: crimson;
-  color: white;
-}
-
-.day.done {
-  background: lightgreen;
-}
-
-/* MENU (riutilizzato) */
 .menu-container {
   position: fixed;
   top: 20px;
@@ -74,33 +52,15 @@ body {
   color: crimson;
 }
 
-/* CONTENUTO */
 h1 {
   margin-top: 100px;
-  font-size: 3em;
   color: crimson;
 }
 
-.exercise {
-  background: white;
-  margin: 20px auto;
-  padding: 20px;
-  width: 200px;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: 0.2s;
-}
-
-.exercise:hover {
-  transform: scale(1.1);
-}
-
-  
 .container {
   display: flex;
-  justify-content: center;
-  align-items: center;
   flex-direction: column;
+  align-items: center;
 }
 
 #calendar {
@@ -108,21 +68,14 @@ h1 {
   display: grid;
   grid-template-columns: repeat(7, 80px);
   gap: 10px;
-  justify-content: center;
 }
 
 .day {
   background: white;
   padding: 20px 0;
-  border-radius: 12px;
+  border-radius: 10px;
   cursor: pointer;
-  transition: 0.2s;
-  text-align: center;
   font-weight: bold;
-}
-
-.day:hover {
-  transform: scale(1.1);
 }
 
 .day.selected {
@@ -134,15 +87,12 @@ h1 {
   background: lightgreen;
 }
 
-
 #workoutPanel {
   margin-top: 30px;
   background: white;
   padding: 20px;
-  border-radius: 12px;
-  width: 250px;
-  text-align: center;
-  box-shadow: 0 0 10px rgba(0,0,0,0.2);
+  border-radius: 10px;
+  width: 260px;
 }
 
 .hidden {
@@ -151,183 +101,94 @@ h1 {
 
 #workoutPanel input {
   width: 80%;
-  margin: 5px 0 10px 0;
-  padding: 5px;
+  margin: 5px;
+}
+
+button {
+  margin-top: 10px;
+  padding: 8px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
 }
 
 #saveWorkout {
   background: crimson;
   color: white;
-  border: none;
-  padding: 10px;
-  border-radius: 8px;
-  cursor: pointer;
 }
-
 </style>
 </head>
 
 <body>
 
-
-  
-<!-- MENU -->
 <div class="menu-container">
   <button class="menu-button">☰</button>
   <div class="dropdown">
     <a href="index.html">Home</a>
-    <a href="gattini.html">Gattini</a>
-    <a href="briscola.html">Briscola</a>
   </div>
 </div>
 
 <h1>Alleniamoci insieme 💪❤️</h1>
-  
+
 <div class="container">
   <div id="calendar"></div>
 
-<div id="workoutPanel" class="hidden">
-  <h2>Allenamento 💪</h2>
+  <div id="workoutPanel" class="hidden">
+    <h2>Allenamento</h2>
+    <div id="exerciseList"></div>
 
-  <div id="exerciseList"></div>
-
-  <button id="addExercise">+ Aggiungi esercizio</button>
-  <button id="saveWorkout">Salva</button>
-  <button id="resetWorkout">Reset Giorno ❌</button>
+    <button id="addExercise">+ Aggiungi</button>
+    <button id="saveWorkout">Salva</button>
+    <button id="resetWorkout">Reset ❌</button>
+  </div>
 </div>
 
-</div>
-  
-  
 <script>
-const menuBtn = document.querySelector('.menu-button');
-const dropdown = document.querySelector('.dropdown');
-let selectedDate = null;
-
-
-menuBtn.addEventListener('click', () => {
-  dropdown.classList.toggle('show');
-});
-
-document.addEventListener('click', (e) => {
-  if (!menuBtn.contains(e.target) && !dropdown.contains(e.target)) {
-    dropdown.classList.remove('show');
-  }
-});
-
 const calendar = document.getElementById("calendar");
+const exerciseList = document.getElementById("exerciseList");
+
+let selectedDate = null;
 
 const today = new Date();
 const year = today.getFullYear();
 const month = today.getMonth();
 
-// Numero giorni nel mese
-const daysInMonth = new Date(year, month + 1, 0).getDate();
+// MENU
+const menuBtn = document.querySelector('.menu-button');
+const dropdown = document.querySelector('.dropdown');
 
-// Giorno della settimana di inizio (0 = domenica)
+menuBtn.addEventListener('click', () => {
+  dropdown.classList.toggle('show');
+});
+
+// CREA CALENDARIO
+const daysInMonth = new Date(year, month + 1, 0).getDate();
 const firstDay = new Date(year, month, 1).getDay();
 
-// Creo spazi vuoti iniziali
 for (let i = 0; i < firstDay; i++) {
-  const empty = document.createElement("div");
-  calendar.appendChild(empty);
+  calendar.appendChild(document.createElement("div"));
 }
 
-colorDays();
-  
-// Creo i giorni
 for (let d = 1; d <= daysInMonth; d++) {
   const day = document.createElement("div");
   day.classList.add("day");
   day.textContent = d;
 
-  const panel = document.getElementById("workoutPanel");
+  day.addEventListener("click", () => {
+    document.querySelectorAll(".day").forEach(el => el.classList.remove("selected"));
+    day.classList.add("selected");
 
+    selectedDate = `${year}-${month}-${d}`;
 
+    document.getElementById("workoutPanel").classList.remove("hidden");
 
-   // Caricare quando clicchi il giorno
-
-  exerciseList.innerHTML = "";
-
-  const data = JSON.parse(localStorage.getItem("workouts")) || {};
-
-  if (data[selectedDate]) {
-    data[selectedDate].forEach(ex => {
-      createExercise(ex.name, ex.percent);
-    });
-  } else {
-  createExercise(); // almeno uno vuoto
-  }
-  
-  
-// Parte di programma per effettuare il salvataggio dei giorni
-
-  
-day.addEventListener("click", () => {
-  document.querySelectorAll(".day").forEach(el => el.classList.remove("selected"));
-  day.classList.add("selected");
-
-  const panel = document.getElementById("workoutPanel");
-  panel.classList.remove("hidden");
-
-  selectedDate = `${year}-${month}-${d}`;
-
-  // 🔥 CARICAMENTO ESERCIZI CORRETTO
-  exerciseList.innerHTML = "";
-
-  const data = JSON.parse(localStorage.getItem("workouts")) || {};
-
-  if (data[selectedDate]) {
-    data[selectedDate].forEach(ex => {
-      createExercise(ex.name, ex.percent);
-    });
-  } else {
-    createExercise(); // uno vuoto
-  }
-});
-
-
-// Colorare il giorno di verde e rosso in base allo stato dei valori aggiunti
-
-function colorDays() {
-  const data = JSON.parse(localStorage.getItem("workouts")) || {};
-
-  document.querySelectorAll(".day").forEach(day => {
-    const d = day.textContent;
-    const key = `${year}-${month}-${d}`;
-
-    day.classList.remove("done"); // reset
-
-    if (data[key]) {
-      day.classList.add("done");
-    }
+    loadExercises();
   });
+
+  calendar.appendChild(day);
 }
 
-
-// Reset degli eventi salvati all'interno del giorno
-document.getElementById("resetWorkout").addEventListener("click", () => {
-  if (!selectedDate) return;
-
-  const data = JSON.parse(localStorage.getItem("workouts")) || {};
-
-  delete data[selectedDate];
-
-  localStorage.setItem("workouts", JSON.stringify(data));
-
-  exerciseList.innerHTML = "";
-  createExercise();
-
-  colorDays();
-
-  alert("Giorno resettato ❌");
-});
-
-  
-// Caricamento degli esercizi all'interno del sito
-  
-const exerciseList = document.getElementById("exerciseList");
-
+// CREA INPUT ESERCIZIO
 function createExercise(name = "", percent = 0) {
   const div = document.createElement("div");
 
@@ -338,15 +199,92 @@ function createExercise(name = "", percent = 0) {
 
   exerciseList.appendChild(div);
 }
+
+// AGGIUNGI ESERCIZIO
 document.getElementById("addExercise").addEventListener("click", () => {
   createExercise();
 });
 
+// SALVA
+document.getElementById("saveWorkout").addEventListener("click", () => {
+  const inputs = exerciseList.querySelectorAll("div");
+
+  let exercises = [];
+  let total = 0;
+
+  inputs.forEach(div => {
+    const name = div.children[0].value;
+    const percent = parseInt(div.children[1].value) || 0;
+
+    total += percent;
+    exercises.push({ name, percent });
+  });
+
+  if (total > 100) {
+    alert("Superi il 100%");
+    return;
+  }
+
+  const data = JSON.parse(localStorage.getItem("workouts")) || {};
+  data[selectedDate] = exercises;
+
+  localStorage.setItem("workouts", JSON.stringify(data));
+
+  colorDays();
+
+  alert("Salvato 💪");
+});
+
+// RESET
+document.getElementById("resetWorkout").addEventListener("click", () => {
+  if (!selectedDate) return;
+
+  const data = JSON.parse(localStorage.getItem("workouts")) || {};
+  delete data[selectedDate];
+
+  localStorage.setItem("workouts", JSON.stringify(data));
+
+  exerciseList.innerHTML = "";
+  createExercise();
+
+  colorDays();
+
+  alert("Reset fatto");
+});
+
+// CARICA ESERCIZI
+function loadExercises() {
+  exerciseList.innerHTML = "";
+
+  const data = JSON.parse(localStorage.getItem("workouts")) || {};
+
+  if (data[selectedDate]) {
+    data[selectedDate].forEach(ex => {
+      createExercise(ex.name, ex.percent);
+    });
+  } else {
+    createExercise();
+  }
+}
+
+// COLORA GIORNI
+function colorDays() {
+  const data = JSON.parse(localStorage.getItem("workouts")) || {};
+
+  document.querySelectorAll(".day").forEach(day => {
+    const d = day.textContent;
+    const key = `${year}-${month}-${d}`;
+
+    day.classList.remove("done");
+
+    if (data[key]) {
+      day.classList.add("done");
+    }
+  });
+}
+
+// inizializza colori
 colorDays();
-
- 
-  
-
 </script>
 
 </body>
