@@ -178,7 +178,7 @@ for (let d = 1; d <= daysInMonth; d++) {
     document.querySelectorAll(".day").forEach(el => el.classList.remove("selected"));
     day.classList.add("selected");
 
-    selectedDate = `${year}-${month}-${d}`;
+    selectedDate = `${year}-${month + 1}-${d}`;
 
     document.getElementById("workoutPanel").classList.remove("hidden");
 
@@ -193,13 +193,56 @@ function createExercise(name = "", percent = 0) {
   const div = document.createElement("div");
 
   div.innerHTML = `
-    <input placeholder="Esercizio" value="${name}">
-    <input type="number" placeholder="%" value="${percent}">
+    <select class="exerciseSelect">
+      <option value="">Seleziona</option>
+      <option value="glutei">Glutei</option>
+      <option value="spalle">Spalle</option>
+      <option value="schiena">Schiena</option>
+      <option value="petto">Petto</option>
+      <option value="addome">Addome</option>
+      <option value="riscaldamento">Riscaldamento</option>
+      <option value="cardio">Cardio</option>
+      <option value="corpo libero">Corpo libero</option>
+      <option value="yoga">Yoga</option>
+      <option value="pilates">Pilates</option>
+      <option value="personalizzata">Personalizzata</option>
+    </select>
+
+    <input class="customInput hidden" placeholder="Scrivi tu">
+
+    <input type="number" class="percentInput" placeholder="%" value="${percent}">
   `;
+
+  const percentInput = div.querySelector(".percentInput");
+  percentInput.addEventListener("input", updateAddButton);
+
+  const select = div.querySelector(".exerciseSelect");
+  const customInput = div.querySelector(".customInput");
+
+  // se era già salvato
+  if ([
+  "glutei","spalle","schiena","petto","addome",
+  "riscaldamento","cardio","corpo libero","yoga","pilates"
+  ].includes(name)) {
+    select.value = name;
+  } else {
+    select.value = "personalizzata";
+    customInput.classList.remove("hidden");
+    customInput.value = name;
+  }
+
+  // mostra input custom
+  select.addEventListener("change", () => {
+    if (select.value === "personalizzata") {
+      customInput.classList.remove("hidden");
+    } else {
+      customInput.classList.add("hidden");
+    }
+  });
 
   exerciseList.appendChild(div);
 }
-
+updateAddButton();
 // AGGIUNGI ESERCIZIO
 document.getElementById("addExercise").addEventListener("click", () => {
   createExercise();
@@ -212,10 +255,23 @@ document.getElementById("saveWorkout").addEventListener("click", () => {
   let exercises = [];
   let total = 0;
 
-  inputs.forEach(div => {
-    const name = div.children[0].value;
-    const percent = parseInt(div.children[1].value) || 0;
 
+  
+  inputs.forEach(div => {
+  const select = div.querySelector(".exerciseSelect");
+  const custom = div.querySelector(".customInput");
+  const percentInput = div.querySelector(".percentInput");
+
+  let name = select.value;
+
+  if (name === "personalizzata") {
+    name = custom.value || "personalizzata";
+  }
+
+  const percent = parseInt(percentInput.value) || 0;
+
+
+    
     total += percent;
     exercises.push({ name, percent });
   });
@@ -248,6 +304,8 @@ document.getElementById("resetWorkout").addEventListener("click", () => {
   exerciseList.innerHTML = "";
   createExercise();
 
+  updateAddButton();
+  
   colorDays();
 
   alert("Reset fatto");
@@ -274,7 +332,7 @@ function colorDays() {
 
   document.querySelectorAll(".day").forEach(day => {
     const d = day.textContent;
-    const key = `${year}-${month}-${d}`;
+    const key = `${year}-${month + 1}-${d}`;
 
     day.classList.remove("done");
 
@@ -283,6 +341,38 @@ function colorDays() {
     }
   });
 }
+
+
+// Funzione che ti andra a togliere il pulsante di aggiunta degli esercizi 
+  
+function updateAddButton() {
+  const inputs = exerciseList.querySelectorAll(".percentInput");
+  let total = 0;
+
+  inputs.forEach(input => {
+    total += parseInt(input.value) || 0;
+  });
+
+  const addBtn = document.getElementById("addExercise");
+  const saveBtn = document.getElementById("saveWorkout");
+
+  if (total >= 100) {
+    addBtn.style.display = "none";
+  } else {
+    addBtn.style.display = "inline-block";
+  }
+
+  // blocca salvataggio se non è 100 preciso
+  if (total !== 100) {
+    saveBtn.style.background = "gray";
+    saveBtn.disabled = true;
+  } else {
+    saveBtn.style.background = "crimson";
+    saveBtn.disabled = false;
+  }
+}
+  
+  
 
 // inizializza colori
 colorDays();
