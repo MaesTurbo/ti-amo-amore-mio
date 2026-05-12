@@ -186,7 +186,7 @@ h1 {
 <div class="container">
   <div id="calendar"></div>
 
-<<div id="workoutPanel" class="hidden">
+<div id="workoutPanel" class="hidden">
   <h2>Allenamento 💪</h2>
 
   <div id="exerciseList"></div>
@@ -243,31 +243,6 @@ for (let d = 1; d <= daysInMonth; d++) {
 
   const panel = document.getElementById("workoutPanel");
 
-day.addEventListener("click", () => {
-  document.querySelectorAll(".day").forEach(el => el.classList.remove("selected"));
-  day.classList.add("selected");
-
-  const panel = document.getElementById("workoutPanel");
-  panel.classList.remove("hidden");
-
-  selectedDate = `${year}-${month}-${d}`;
-
-  // Carica dati se esistono
-  const data = JSON.parse(localStorage.getItem("workouts")) || {};
-
-  if (data[selectedDate]) {
-    document.getElementById("glutei").value = data[selectedDate].glutei;
-    document.getElementById("schiena").value = data[selectedDate].schiena;
-    document.getElementById("warmup").value = data[selectedDate].warmup;
-  } else {
-    document.getElementById("glutei").value = 0;
-    document.getElementById("schiena").value = 0;
-    document.getElementById("warmup").value = 0;
-  }  
-});
-
-  calendar.appendChild(day);
-}
 
 
    // Caricare quando clicchi il giorno
@@ -288,35 +263,27 @@ day.addEventListener("click", () => {
 // Parte di programma per effettuare il salvataggio dei giorni
 
   
-document.getElementById("saveWorkout").addEventListener("click", () => {
-  const inputs = exerciseList.querySelectorAll("div");
+day.addEventListener("click", () => {
+  document.querySelectorAll(".day").forEach(el => el.classList.remove("selected"));
+  day.classList.add("selected");
 
-  let exercises = [];
-  let total = 0;
+  const panel = document.getElementById("workoutPanel");
+  panel.classList.remove("hidden");
 
-  inputs.forEach(div => {
-    const name = div.children[0].value;
-    const percent = parseInt(div.children[1].value) || 0;
+  selectedDate = `${year}-${month}-${d}`;
 
-    total += percent;
-
-    exercises.push({ name, percent });
-  });
-
-  if (total > 100) {
-    alert("Superi il 100%!");
-    return;
-  }
+  // 🔥 CARICAMENTO ESERCIZI CORRETTO
+  exerciseList.innerHTML = "";
 
   const data = JSON.parse(localStorage.getItem("workouts")) || {};
 
-  data[selectedDate] = exercises;
-
-  localStorage.setItem("workouts", JSON.stringify(data));
-
-  colorDays();
-
-  alert("Salvato 💪");
+  if (data[selectedDate]) {
+    data[selectedDate].forEach(ex => {
+      createExercise(ex.name, ex.percent);
+    });
+  } else {
+    createExercise(); // uno vuoto
+  }
 });
 
 
@@ -339,8 +306,7 @@ function colorDays() {
 
 
 // Reset degli eventi salvati all'interno del giorno
-
-  document.getElementById("resetWorkout").addEventListener("click", () => {
+document.getElementById("resetWorkout").addEventListener("click", () => {
   if (!selectedDate) return;
 
   const data = JSON.parse(localStorage.getItem("workouts")) || {};
@@ -349,10 +315,8 @@ function colorDays() {
 
   localStorage.setItem("workouts", JSON.stringify(data));
 
-  // reset input
-  document.getElementById("glutei").value = 0;
-  document.getElementById("schiena").value = 0;
-  document.getElementById("warmup").value = 0;
+  exerciseList.innerHTML = "";
+  createExercise();
 
   colorDays();
 
@@ -378,7 +342,7 @@ document.getElementById("addExercise").addEventListener("click", () => {
   createExercise();
 });
 
-
+colorDays();
 
  
   
