@@ -261,7 +261,7 @@ function loadExercises() {
   if (data[selectedDate]) {
     data[selectedDate].forEach(ex => {
       createExercise(ex.name, ex.percent);
-    });
+    };
   } else {
     createExercise();
   }
