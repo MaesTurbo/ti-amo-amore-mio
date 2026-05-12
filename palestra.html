@@ -264,31 +264,63 @@ day.addEventListener("click", () => {
     document.getElementById("schiena").value = 0;
     document.getElementById("warmup").value = 0;
   }
+
+   // Caricare quando clicchi il giorno
+
+  exerciseList.innerHTML = "";
+
+  const data = JSON.parse(localStorage.getItem("workouts")) || {};
+
+  if (data[selectedDate]) {
+    data[selectedDate].forEach(ex => {
+      createExercise(ex.name, ex.percent);
+    });
+  } else {
+  createExercise(); // almeno uno vuoto
+  }
+  
 });
 
   calendar.appendChild(day);
 }
 
+  
+// Parte di programma per effettuare il salvataggio dei giorni
+
+  
 document.getElementById("saveWorkout").addEventListener("click", () => {
-  const g = document.getElementById("glutei").value;
-  const s = document.getElementById("schiena").value;
-  const w = document.getElementById("warmup").value;
+  const inputs = exerciseList.querySelectorAll("div");
+
+  let exercises = [];
+  let total = 0;
+
+  inputs.forEach(div => {
+    const name = div.children[0].value;
+    const percent = parseInt(div.children[1].value) || 0;
+
+    total += percent;
+
+    exercises.push({ name, percent });
+  });
+
+  if (total > 100) {
+    alert("Superi il 100%!");
+    return;
+  }
 
   const data = JSON.parse(localStorage.getItem("workouts")) || {};
 
-  data[selectedDate] = {
-    glutei: g,
-    schiena: s,
-    warmup: w
-  };
+  data[selectedDate] = exercises;
 
   localStorage.setItem("workouts", JSON.stringify(data));
 
   colorDays();
 
-  alert("Allenamento salvato 💪");
+  alert("Salvato 💪");
 });
 
+
+// Colorare il giorno di verde e rosso in base allo stato dei valori aggiunti
 
 function colorDays() {
   const data = JSON.parse(localStorage.getItem("workouts")) || {};
@@ -305,6 +337,8 @@ function colorDays() {
   });
 }
 
+
+// Reset degli eventi salvati all'interno del giorno
 
   document.getElementById("resetWorkout").addEventListener("click", () => {
   if (!selectedDate) return;
@@ -324,6 +358,29 @@ function colorDays() {
 
   alert("Giorno resettato ❌");
 });
+
+  
+// Caricamento degli esercizi all'interno del sito
+  
+const exerciseList = document.getElementById("exerciseList");
+
+function createExercise(name = "", percent = 0) {
+  const div = document.createElement("div");
+
+  div.innerHTML = `
+    <input placeholder="Esercizio" value="${name}">
+    <input type="number" placeholder="%" value="${percent}">
+  `;
+
+  exerciseList.appendChild(div);
+}
+document.getElementById("addExercise").addEventListener("click", () => {
+  createExercise();
+});
+
+
+
+ 
   
 
 </script>
