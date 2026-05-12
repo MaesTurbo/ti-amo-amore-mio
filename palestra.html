@@ -140,9 +140,18 @@ button {
     <button id="addExercise">+ Aggiungi</button>
     <button id="saveWorkout">Salva</button>
     <button id="resetWorkout">Reset ❌</button>
+    
   </div>
 </div>
 
+
+  
+<select id="schedaSelect"></select>
+<button onclick="generateScheda()">Crea Scheda</button>
+
+<div id="schedaView"></div>
+
+  
 <script>
 const calendar = document.getElementById("calendar");
 const exerciseList = document.getElementById("exerciseList");
@@ -409,6 +418,89 @@ function updateAddButton() {
 }
 
 
+// CREAZIONE AUTOMATICA SCHEDA
+  
+function generateScheda() {
+  const nome = prompt("Nome scheda?");
+  if (!nome) return;
+
+  const data = JSON.parse(localStorage.getItem("workouts")) || {};
+
+  let scheda = {
+    giorni: {}
+  };
+
+  let giornoIndex = 1;
+
+  Object.keys(data).forEach(date => {
+    scheda.giorni["Giorno " + giornoIndex] = data[date];
+    giornoIndex++;
+  });
+
+  let schede = JSON.parse(localStorage.getItem("schede")) || {};
+
+  schede[nome] = scheda;
+
+  localStorage.setItem("schede", JSON.stringify(schede));
+
+  loadSchede();
+}
+
+
+// Funzione di loading schede tramite pressione del pulsante
+
+function loadSchede() {
+  const schede = JSON.parse(localStorage.getItem("schede")) || {};
+  const select = document.getElementById("schedaSelect");
+
+  select.innerHTML = "";
+
+  Object.keys(schede).forEach(nome => {
+    let opt = document.createElement("option");
+    opt.value = nome;
+    opt.textContent = nome;
+    select.appendChild(opt);
+  });
+}
+
+
+// Funzione che ti andra a mostrare le schede
+  
+function showScheda(nome) {
+  const schede = JSON.parse(localStorage.getItem("schede")) || {};
+  const container = document.getElementById("schedaView");
+
+  container.innerHTML = "";
+
+  let scheda = schede[nome];
+
+  Object.keys(scheda.giorni).forEach(g => {
+    let div = document.createElement("div");
+    div.innerHTML = `<h3>${g}</h3>`;
+
+    scheda.giorni[g].forEach(ex => {
+      let p = document.createElement("p");
+      p.textContent = ex.name + " " + ex.percent + "%";
+      div.appendChild(p);
+    });
+    
+    container.appendChild(div);
+  });
+  if (!schede[nome]) return;
+}
+
+
+// Collegamento dei bottoni
+
+const schedaSelect = document.getElementById("schedaSelect");
+
+
+schedaSelect.addEventListener("change", () => {
+  showScheda(schedaSelect.value);
+});
+  
+
+
 // Funzione per aggiornare tutti i select
 
   
@@ -437,8 +529,8 @@ function updateAllSelects() {
 }
   
   
-  
-
+// Richiamo delle schede
+loadSchede();
 // inizializza colori
 colorDays();
 </script>
