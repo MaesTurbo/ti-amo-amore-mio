@@ -146,6 +146,11 @@ button {
 <script>
 const calendar = document.getElementById("calendar");
 const exerciseList = document.getElementById("exerciseList");
+const categories = [
+  "glutei","spalle","schiena","petto","addome",
+  "riscaldamento","cardio","corpo libero","yoga","pilates","personalizzata"
+];
+  
 
 let selectedDate = null;
 
@@ -188,51 +193,74 @@ for (let d = 1; d <= daysInMonth; d++) {
   calendar.appendChild(day);
 }
 
+
+// Funzione per categorie usate
+
+function getUsedCategories() {
+  const selects = document.querySelectorAll(".exerciseSelect");
+  let used = [];
+
+  selects.forEach(sel => {
+    if (sel.value && sel.value !== "personalizzata") {
+      used.push(sel.value);
+    }
+  });
+
+  return used;
+}
+
+  
+  
 // CREA INPUT ESERCIZIO
 function createExercise(name = "", percent = 0) {
   const div = document.createElement("div");
 
-  div.innerHTML = `
-    <select class="exerciseSelect">
-      <option value="">Seleziona</option>
-      <option value="glutei">Glutei</option>
-      <option value="spalle">Spalle</option>
-      <option value="schiena">Schiena</option>
-      <option value="petto">Petto</option>
-      <option value="addome">Addome</option>
-      <option value="riscaldamento">Riscaldamento</option>
-      <option value="cardio">Cardio</option>
-      <option value="corpo libero">Corpo libero</option>
-      <option value="yoga">Yoga</option>
-      <option value="pilates">Pilates</option>
-      <option value="personalizzata">Personalizzata</option>
-    </select>
+  const used = getUsedCategories();
 
-    <input class="customInput hidden" placeholder="Scrivi tu">
+  // SELECT
+  const select = document.createElement("select");
+  select.classList.add("exerciseSelect");
 
-    <input type="number" class="percentInput" placeholder="%" value="${percent}">
-  `;
+  categories.forEach(cat => {
+    if (!used.includes(cat) || cat === "personalizzata" || cat === name) {
+      const option = document.createElement("option");
+      option.value = cat;
+      option.textContent = cat.charAt(0).toUpperCase() + cat.slice(1);
+      select.appendChild(option);
+    }
+  });
 
-  const percentInput = div.querySelector(".percentInput");
+  // INPUT PERSONALIZZATO
+  const customInput = document.createElement("input");
+  customInput.classList.add("customInput", "hidden");
+  customInput.placeholder = "Scrivi tu";
+
+  // INPUT PERCENTUALE
+  const percentInput = document.createElement("input");
+  percentInput.type = "number";
+  percentInput.classList.add("percentInput");
+  percentInput.placeholder = "%";
+  percentInput.value = percent;
+
+  // EVENTO PERCENTUALE
   percentInput.addEventListener("input", updateAddButton);
 
-  const select = div.querySelector(".exerciseSelect");
-  const customInput = div.querySelector(".customInput");
-
-  // se era già salvato
+  // GESTIONE VALORE SALVATO
   if ([
-  "glutei","spalle","schiena","petto","addome",
-  "riscaldamento","cardio","corpo libero","yoga","pilates"
+    "glutei","spalle","schiena","petto","addome",
+    "riscaldamento","cardio","corpo libero","yoga","pilates"
   ].includes(name)) {
     select.value = name;
-  } else {
+  } else if (name) {
     select.value = "personalizzata";
     customInput.classList.remove("hidden");
     customInput.value = name;
   }
 
-  // mostra input custom
+  // CAMBIO SELECT
   select.addEventListener("change", () => {
+    updateAllSelects();
+
     if (select.value === "personalizzata") {
       customInput.classList.remove("hidden");
     } else {
@@ -240,13 +268,17 @@ function createExercise(name = "", percent = 0) {
     }
   });
 
+  // AGGIUNTA ELEMENTI
+  div.appendChild(select);
+  div.appendChild(customInput);
+  div.appendChild(percentInput);
+
   exerciseList.appendChild(div);
+
+  updateAddButton();
 }
-updateAddButton();
-// AGGIUNGI ESERCIZIO
-document.getElementById("addExercise").addEventListener("click", () => {
-  createExercise();
-});
+
+  
 
 // SALVA
 document.getElementById("saveWorkout").addEventListener("click", () => {
@@ -371,6 +403,35 @@ function updateAddButton() {
     saveBtn.disabled = false;
   }
 }
+
+
+// Funzione per aggiornare tutti i select
+
+  
+function updateAllSelects() {
+  const allDivs = exerciseList.querySelectorAll("div");
+
+  allDivs.forEach(div => {
+    const currentSelect = div.querySelector(".exerciseSelect");
+    const currentValue = currentSelect.value;
+
+    const used = getUsedCategories();
+
+    currentSelect.innerHTML = "";
+
+    categories.forEach(cat => {
+      if (!used.includes(cat) || cat === "personalizzata" || cat === currentValue) {
+        const option = document.createElement("option");
+        option.value = cat;
+        option.textContent = cat.charAt(0).toUpperCase() + cat.slice(1);
+        currentSelect.appendChild(option);
+      }
+    });
+
+    currentSelect.value = currentValue;
+  });
+}
+  
   
   
 
