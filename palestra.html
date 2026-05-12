@@ -227,6 +227,7 @@ document.getElementById("saveWorkout").addEventListener("click", () => {
 
   const data = JSON.parse(localStorage.getItem("workouts")) || {};
   data[selectedDate] = exercises;
+  
 
   localStorage.setItem("workouts", JSON.stringify(data));
 
@@ -258,13 +259,13 @@ function loadExercises() {
 
   const data = JSON.parse(localStorage.getItem("workouts")) || {};
 
-  if (data[selectedDate]) {
-    data[selectedDate].forEach(ex => {
-      createExercise(ex.name, ex.percent);
-    };
-  } else {
-    createExercise();
-  }
+if (data[selectedDate]) {
+  data[selectedDate].forEach(ex => {
+    createExercise(ex.name, ex.percent);
+  });
+} else {
+  createExercise();
+}
 }
 
 // COLORA GIORNI
