@@ -263,7 +263,12 @@ day.addEventListener("click", () => {
     document.getElementById("glutei").value = 0;
     document.getElementById("schiena").value = 0;
     document.getElementById("warmup").value = 0;
-  }
+  }  
+});
+
+  calendar.appendChild(day);
+}
+
 
    // Caricare quando clicchi il giorno
 
@@ -279,11 +284,6 @@ day.addEventListener("click", () => {
   createExercise(); // almeno uno vuoto
   }
   
-});
-
-  calendar.appendChild(day);
-}
-
   
 // Parte di programma per effettuare il salvataggio dei giorni
 
