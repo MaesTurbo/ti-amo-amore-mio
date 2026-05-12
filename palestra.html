@@ -186,19 +186,14 @@ h1 {
 <div class="container">
   <div id="calendar"></div>
 
-  <div id="workoutPanel" class="hidden">
-    <h2>Imposta allenamento 💪</h2>
+<<div id="workoutPanel" class="hidden">
+  <h2>Allenamento 💪</h2>
 
-    <label>Glutei (%)</label>
-    <input type="number" id="glutei" value="0">
+  <div id="exerciseList"></div>
 
-    <label>Schiena (%)</label>
-    <input type="number" id="schiena" value="0">
-
-    <label>Riscaldamento (%)</label>
-    <input type="number" id="warmup" value="0">
-
+  <button id="addExercise">+ Aggiungi esercizio</button>
   <button id="saveWorkout">Salva</button>
+  <button id="resetWorkout">Reset Giorno ❌</button>
 </div>
 
 </div>
@@ -302,11 +297,34 @@ function colorDays() {
     const d = day.textContent;
     const key = `${year}-${month}-${d}`;
 
+    day.classList.remove("done"); // reset
+
     if (data[key]) {
       day.classList.add("done");
     }
   });
 }
+
+
+  document.getElementById("resetWorkout").addEventListener("click", () => {
+  if (!selectedDate) return;
+
+  const data = JSON.parse(localStorage.getItem("workouts")) || {};
+
+  delete data[selectedDate];
+
+  localStorage.setItem("workouts", JSON.stringify(data));
+
+  // reset input
+  document.getElementById("glutei").value = 0;
+  document.getElementById("schiena").value = 0;
+  document.getElementById("warmup").value = 0;
+
+  colorDays();
+
+  alert("Giorno resettato ❌");
+});
+  
 
 </script>
 
