@@ -198,6 +198,8 @@ for (let d = 1; d <= daysInMonth; d++) {
     document.getElementById("workoutPanel").classList.remove("hidden");
 
     loadExercises();
+    loadSchede();
+    showScheda(selectedDate);
   });
 
   calendar.appendChild(day);
@@ -378,9 +380,13 @@ if (data[selectedDate]) {
   updateAddButton();
 }
 
+
+  
 // COLORA GIORNI
+  
 function colorDays() {
   const data = JSON.parse(localStorage.getItem("workouts")) || {};
+  const schede = JSON.parse(localStorage.getItem("schede")) || {};
 
   document.querySelectorAll(".day").forEach(day => {
     const d = day.textContent;
@@ -391,9 +397,16 @@ function colorDays() {
     if (data[key]) {
       day.classList.add("done");
     }
+
+    // 🔥 ORO
+    if (schede[key] && schede[key].completata) {
+      day.style.background = "gold";
+      day.style.color = "black";
+    }
   });
 }
 
+  
 
 // Funzione che ti andra a togliere il pulsante di aggiunta degli esercizi 
   
@@ -429,18 +442,18 @@ function updateAddButton() {
 
 
 
-// Funzione di loading schede tramite pressione del pulsante
-
+// Funzione di loading schede tramite pressione del pulsanteù
+  
 function loadSchede() {
   const schede = JSON.parse(localStorage.getItem("schede")) || {};
   const select = document.getElementById("schedaSelect");
 
   select.innerHTML = "";
 
-  Object.keys(schede).forEach(nome => {
+  Object.keys(schede).forEach(data => {
     let opt = document.createElement("option");
-    opt.value = nome;
-    opt.textContent = nome;
+    opt.value = data;
+    opt.textContent = data;
     select.appendChild(opt);
   });
 }
@@ -448,27 +461,67 @@ function loadSchede() {
 
 // Funzione che ti andra a mostrare le schede
   
-function showScheda(nome) {
+function showScheda(data) {
   const schede = JSON.parse(localStorage.getItem("schede")) || {};
   const container = document.getElementById("schedaView");
 
-  container.innerHTML = ""; // 🔥 SPOSTATO QUI
+  container.innerHTML = "";
 
-  if (!schede[nome]) return;
+  if (!schede[data]) return;
 
-  let scheda = schede[nome];
+  const giorno = schede[data];
 
-  Object.keys(scheda.giorni).forEach(g => {
-    let div = document.createElement("div");
-    div.innerHTML = `<h3>${g}</h3>`;
+  ["scheda1", "scheda2", "scheda3"].forEach((nome, index) => {
+    let box = document.createElement("div");
+    box.style.border = "2px solid crimson";
+    box.style.borderRadius = "10px";
+    box.style.margin = "10px";
+    box.style.padding = "10px";
 
-    scheda.giorni[g].forEach(ex => {
+    let titolo = document.createElement("h3");
+    titolo.textContent = "Scheda " + (index + 1);
+
+    box.appendChild(titolo);
+
+    giorno[nome].forEach(ex => {
       let p = document.createElement("p");
       p.textContent = ex.name + " " + ex.percent + "%";
-      div.appendChild(p);
+      box.appendChild(p);
     });
 
-    container.appendChild(div);
+    // 🔥 bottone scegli
+    let scegliBtn = document.createElement("button");
+    scegliBtn.textContent = "Scegli questa";
+
+    scegliBtn.onclick = () => {
+      giorno.scelta = nome;
+      localStorage.setItem("schede", JSON.stringify(schede));
+      showScheda(data);
+    };
+
+    box.appendChild(scegliBtn);
+
+    // 🔥 evidenzia scelta
+    if (giorno.scelta === nome) {
+      box.style.background = "lightgreen";
+
+      let completaBtn = document.createElement("button");
+      completaBtn.textContent = "Completa ✅";
+
+      completaBtn.onclick = () => {
+        if (!confirm("Confermi completamento?")) return;
+
+        giorno.completata = true;
+        localStorage.setItem("schede", JSON.stringify(schede));
+
+        colorDays();
+        showScheda(data);
+      };
+
+      box.appendChild(completaBtn);
+    }
+
+    container.appendChild(box);
   });
 }
 
@@ -538,34 +591,27 @@ function updateAllSelects() {
 }
 
 
-  // Funzione di auto generazione delle schede
+  // Funzione di generazione delle schede
 
 function autoGenerateScheda() {
   const data = JSON.parse(localStorage.getItem("workouts")) || {};
-
-  if (Object.keys(data).length === 0) return; // 🔥 FIX
-
-  let scheda = {
-    giorni: {}
-  };
-
-  let index = 1;
-
-  Object.keys(data).forEach(date => {
-    scheda.giorni["Giorno " + index] = data[date];
-    index++;
-  });
+  if (!data[selectedDate]) return;
 
   let schede = JSON.parse(localStorage.getItem("schede")) || {};
 
-  schede["Scheda Automatica"] = scheda;
+  // 🔥 crea 3 varianti (per ora uguali, poi possiamo migliorarle)
+  schede[selectedDate] = {
+    scheda1: data[selectedDate],
+    scheda2: data[selectedDate],
+    scheda3: data[selectedDate],
+    scelta: null,
+    completata: false
+  };
 
   localStorage.setItem("schede", JSON.stringify(schede));
 
   loadSchede();
-
-  // 🔥 AGGIUNGI QUESTO
-  showScheda("Scheda Automatica");
+  showScheda(selectedDate);
 }
   
 
