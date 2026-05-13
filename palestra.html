@@ -286,10 +286,6 @@ document.getElementById("deleteScheda").addEventListener("click", () => {
 
   if (!nome) return;
 
-  if (schedaSelect.options.length === 0) {
-  alert("Nessuna scheda da eliminare");
-  return;
-}
   if (!confirm("Vuoi eliminare questa scheda?")) return;
 
   let schede = JSON.parse(localStorage.getItem("schede")) || {};
@@ -299,11 +295,17 @@ document.getElementById("deleteScheda").addEventListener("click", () => {
   localStorage.setItem("schede", JSON.stringify(schede));
 
   loadSchede();
+ 
+  if (schedaSelect.value) {
+    showScheda(schedaSelect.value);
+  } else {
   document.getElementById("schedaView").innerHTML = "";
+}
+  // 🔥 QUESTA È LA FIX
+  showScheda(schedaSelect.value);
 
   alert("Scheda eliminata ✅");
 });
-
 
   
   // AGGIUNTA ELEMENTI
