@@ -148,6 +148,7 @@ button {
   
 <select id="schedaSelect"></select>
 
+<button id="deleteScheda">Elimina Scheda ❌</button>
 
 <div id="schedaView"></div>
 
@@ -277,6 +278,34 @@ function createExercise(name = "", percent = 0) {
     }
   });
 
+
+  //funzione per il pulsante che elimina la scheda
+  
+document.getElementById("deleteScheda").addEventListener("click", () => {
+  const nome = schedaSelect.value;
+
+  if (!nome) return;
+
+  if (schedaSelect.options.length === 0) {
+  alert("Nessuna scheda da eliminare");
+  return;
+}
+  if (!confirm("Vuoi eliminare questa scheda?")) return;
+
+  let schede = JSON.parse(localStorage.getItem("schede")) || {};
+
+  delete schede[nome];
+
+  localStorage.setItem("schede", JSON.stringify(schede));
+
+  loadSchede();
+  document.getElementById("schedaView").innerHTML = "";
+
+  alert("Scheda eliminata ✅");
+});
+
+
+  
   // AGGIUNTA ELEMENTI
   div.appendChild(select);
   div.appendChild(customInput);
