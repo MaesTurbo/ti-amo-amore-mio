@@ -452,9 +452,9 @@ function showScheda(nome) {
   const schede = JSON.parse(localStorage.getItem("schede")) || {};
   const container = document.getElementById("schedaView");
 
+  container.innerHTML = ""; // 🔥 SPOSTATO QUI
+
   if (!schede[nome]) return;
-  
-  container.innerHTML = "";
 
   let scheda = schede[nome];
 
@@ -467,10 +467,9 @@ function showScheda(nome) {
       p.textContent = ex.name + " " + ex.percent + "%";
       div.appendChild(p);
     });
-    
+
     container.appendChild(div);
   });
- 
 }
 
 
@@ -544,6 +543,8 @@ function updateAllSelects() {
 function autoGenerateScheda() {
   const data = JSON.parse(localStorage.getItem("workouts")) || {};
 
+  if (Object.keys(data).length === 0) return; // 🔥 FIX
+
   let scheda = {
     giorni: {}
   };
@@ -562,7 +563,11 @@ function autoGenerateScheda() {
   localStorage.setItem("schede", JSON.stringify(schede));
 
   loadSchede();
+
+  // 🔥 AGGIUNGI QUESTO
+  showScheda("Scheda Automatica");
 }
+  
 
 if (schedaSelect.value) {
   showScheda(schedaSelect.value);
