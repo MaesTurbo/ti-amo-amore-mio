@@ -279,33 +279,7 @@ function createExercise(name = "", percent = 0) {
   });
 
 
-  //funzione per il pulsante che elimina la scheda
-  
-document.getElementById("deleteScheda").addEventListener("click", () => {
-  const nome = schedaSelect.value;
 
-  if (!nome) return;
-
-  if (!confirm("Vuoi eliminare questa scheda?")) return;
-
-  let schede = JSON.parse(localStorage.getItem("schede")) || {};
-
-  delete schede[nome];
-
-  localStorage.setItem("schede", JSON.stringify(schede));
-
-  loadSchede();
- 
-  if (schedaSelect.value) {
-    showScheda(schedaSelect.value);
-  } else {
-  document.getElementById("schedaView").innerHTML = "";
-}
-  // 🔥 QUESTA È LA FIX
-  showScheda(schedaSelect.value);
-
-  alert("Scheda eliminata ✅");
-});
 
   
   // AGGIUNTA ELEMENTI
@@ -509,7 +483,33 @@ schedaSelect.addEventListener("change", () => {
   showScheda(schedaSelect.value);
 });
   
+  //funzione per il pulsante che elimina la scheda
+  
+document.getElementById("deleteScheda").addEventListener("click", () => {
+  const nome = schedaSelect.value;
 
+  if (!nome) return;
+
+  if (!confirm("Vuoi eliminare questa scheda?")) return;
+
+  let schede = JSON.parse(localStorage.getItem("schede")) || {};
+
+  delete schede[nome];
+
+  localStorage.setItem("schede", JSON.stringify(schede));
+
+  loadSchede();
+ 
+  if (schedaSelect.value) {
+    showScheda(schedaSelect.value);
+  } else {
+  document.getElementById("schedaView").innerHTML = "";
+}
+  // 🔥 QUESTA È LA FIX
+  showScheda(schedaSelect.value);
+
+  alert("Scheda eliminata ✅");
+});
 
 // Funzione per aggiornare tutti i select
 
@@ -564,7 +564,9 @@ function autoGenerateScheda() {
   loadSchede();
 }
 
-  
+if (schedaSelect.value) {
+  showScheda(schedaSelect.value);
+}
   
 // Richiamo delle schede
 loadSchede();
