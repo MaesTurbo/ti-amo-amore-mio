@@ -471,7 +471,7 @@ function showScheda(data) {
 
   const giorno = schede[data];
 
-  ["scheda1", "scheda2", "scheda3"].forEach((nome, index) => {
+  ["schedaA", "schedaB", "schedaC"].forEach((nome, index) => {
     let box = document.createElement("div");
     box.style.border = "2px solid crimson";
     box.style.borderRadius = "10px";
@@ -479,7 +479,7 @@ function showScheda(data) {
     box.style.padding = "10px";
 
     let titolo = document.createElement("h3");
-    titolo.textContent = "Scheda " + (index + 1);
+    titolo.textContent = "Scheda " + nome.replace("scheda", "");
 
     box.appendChild(titolo);
 
@@ -592,18 +592,42 @@ function updateAllSelects() {
 
 
   // Funzione di generazione delle schede
-
 function autoGenerateScheda() {
   const data = JSON.parse(localStorage.getItem("workouts")) || {};
   if (!data[selectedDate]) return;
 
   let schede = JSON.parse(localStorage.getItem("schede")) || {};
 
-  // 🔥 crea 3 varianti (per ora uguali, poi possiamo migliorarle)
+  const esercizi = data[selectedDate];
+
+  // 🔥 DIVISIONE INTELLIGENTE
+  const A = [];
+  const B = [];
+  const C = [];
+
+  esercizi.forEach(ex => {
+    const nome = ex.name.toLowerCase();
+
+    if (["petto", "spalle", "schiena"].includes(nome)) {
+      A.push(ex);
+    } 
+    else if (["glutei", "addome"].includes(nome)) {
+      B.push(ex);
+    } 
+    else {
+      C.push(ex);
+    }
+  });
+
+  // 🔥 fallback (se una scheda è vuota)
+  if (A.length === 0) A.push(...esercizi.slice(0, 2));
+  if (B.length === 0) B.push(...esercizi.slice(2, 4));
+  if (C.length === 0) C.push(...esercizi.slice(1, 3));
+
   schede[selectedDate] = {
-    scheda1: data[selectedDate],
-    scheda2: data[selectedDate],
-    scheda3: data[selectedDate],
+    schedaA: A,
+    schedaB: B,
+    schedaC: C,
     scelta: null,
     completata: false
   };
@@ -613,6 +637,12 @@ function autoGenerateScheda() {
   loadSchede();
   showScheda(selectedDate);
 }
+
+
+
+
+  
+// Richiami  
   
 
 if (schedaSelect.value) {
