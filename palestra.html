@@ -147,7 +147,7 @@ button {
 
   
 <select id="schedaSelect"></select>
-<button onclick="generateScheda()">Crea Scheda</button>
+
 
 <div id="schedaView"></div>
 
@@ -332,7 +332,9 @@ document.getElementById("saveWorkout").addEventListener("click", () => {
   localStorage.setItem("workouts", JSON.stringify(data));
 
   colorDays();
-
+  
+  autoGenerateScheda();
+  
   alert("Salvato 💪");
 });
 
@@ -418,33 +420,8 @@ function updateAddButton() {
 }
 
 
-// CREAZIONE AUTOMATICA SCHEDA
-  
-function generateScheda() {
-  const nome = prompt("Nome scheda?");
-  if (!nome) return;
 
-  const data = JSON.parse(localStorage.getItem("workouts")) || {};
 
-  let scheda = {
-    giorni: {}
-  };
-
-  let giornoIndex = 1;
-
-  Object.keys(data).forEach(date => {
-    scheda.giorni["Giorno " + giornoIndex] = data[date];
-    giornoIndex++;
-  });
-
-  let schede = JSON.parse(localStorage.getItem("schede")) || {};
-
-  schede[nome] = scheda;
-
-  localStorage.setItem("schede", JSON.stringify(schede));
-
-  loadSchede();
-}
 
 
 // Funzione di loading schede tramite pressione del pulsante
@@ -470,6 +447,8 @@ function showScheda(nome) {
   const schede = JSON.parse(localStorage.getItem("schede")) || {};
   const container = document.getElementById("schedaView");
 
+  if (!schede[nome]) return;
+  
   container.innerHTML = "";
 
   let scheda = schede[nome];
@@ -486,7 +465,7 @@ function showScheda(nome) {
     
     container.appendChild(div);
   });
-  if (!schede[nome]) return;
+ 
 }
 
 
@@ -527,6 +506,33 @@ function updateAllSelects() {
     currentSelect.value = currentValue;
   });
 }
+
+
+  // Funzione di auto generazione delle schede
+
+function autoGenerateScheda() {
+  const data = JSON.parse(localStorage.getItem("workouts")) || {};
+
+  let scheda = {
+    giorni: {}
+  };
+
+  let index = 1;
+
+  Object.keys(data).forEach(date => {
+    scheda.giorni["Giorno " + index] = data[date];
+    index++;
+  });
+
+  let schede = JSON.parse(localStorage.getItem("schede")) || {};
+
+  schede["Scheda Automatica"] = scheda;
+
+  localStorage.setItem("schede", JSON.stringify(schede));
+
+  loadSchede();
+}
+
   
   
 // Richiamo delle schede
