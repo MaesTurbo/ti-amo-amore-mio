@@ -160,6 +160,54 @@ const categories = [
   "glutei","spalle","schiena","petto","addome",
   "riscaldamento","cardio","corpo libero","yoga","pilates","personalizzata"
 ];
+
+
+// Database contenente tutti gli esercizi per ogni categoria che abbiamo deciso precedentemente
+const eserciziDB = {
+  glutei: [
+    { nome: "Hip Thrust", diff: "difficile", peso: 3 },
+    { nome: "Squat", diff: "medio", peso: 2 },
+    { nome: "Affondi", diff: "medio", peso: 2 },
+    { nome: "Glute Bridge", diff: "facile", peso: 1 }
+  ],
+
+  spalle: [
+    { nome: "Military Press", diff: "difficile", peso: 3 },
+    { nome: "Alzate laterali", diff: "medio", peso: 2 },
+    { nome: "Alzate frontali", diff: "facile", peso: 1 }
+  ],
+
+  schiena: [
+    { nome: "Trazioni", diff: "difficile", peso: 3 },
+    { nome: "Lat Machine", diff: "medio", peso: 2 },
+    { nome: "Rematore", diff: "medio", peso: 2 }
+  ],
+
+  petto: [
+    { nome: "Panca piana", diff: "difficile", peso: 3 },
+    { nome: "Panca inclinata", diff: "medio", peso: 2 },
+    { nome: "Croci", diff: "facile", peso: 1 }
+  ],
+
+  addome: [
+    { nome: "Crunch", diff: "facile", peso: 1 },
+    { nome: "Plank", diff: "medio", peso: 2 },
+    { nome: "Leg Raise", diff: "medio", peso: 2 }
+  ],
+
+  cardio: [
+    { nome: "Corsa", diff: "medio", peso: 2 },
+    { nome: "Cyclette", diff: "facile", peso: 1 },
+    { nome: "HIIT", diff: "difficile", peso: 3 }
+  ],
+
+  corpo_libero: [
+    { nome: "Push-up", diff: "medio", peso: 2 },
+    { nome: "Burpees", diff: "difficile", peso: 3 },
+    { nome: "Squat libero", diff: "facile", peso: 1 }
+  ]
+};
+
   
 
 let selectedDate = null;
@@ -302,6 +350,11 @@ function createExercise(name = "", percent = 0) {
 // SALVA
 document.getElementById("saveWorkout").addEventListener("click", () => {
   const inputs = exerciseList.querySelectorAll("div");
+
+  exercises.forEach(ex => {
+  let lista = getEserciziPerCategoria(ex.name, ex.percent);
+  console.log(ex.name, lista);
+  });
 
   let exercises = [];
   let total = 0;
@@ -638,6 +691,28 @@ function autoGenerateScheda() {
   showScheda(selectedDate);
 }
 
+
+// Funzione per prendere gli esercizi
+unction getEserciziPerCategoria(cat, percentuale) {
+  if (!eserciziDB[cat]) return [];
+
+  let lista = eserciziDB[cat];
+
+  let risultato = [];
+
+  let target = Math.ceil(percentuale / 20); 
+  // 🔥 ogni 20% → 1 esercizio
+
+  for (let i = 0; i < target; i++) {
+    let random = lista[Math.floor(Math.random() * lista.length)];
+    risultato.push(random);
+  }
+
+  return risultato;
+}
+
+
+  
 
 
 
