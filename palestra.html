@@ -351,11 +351,6 @@ function createExercise(name = "", percent = 0) {
 document.getElementById("saveWorkout").addEventListener("click", () => {
   const inputs = exerciseList.querySelectorAll("div");
 
-  exercises.forEach(ex => {
-  let lista = getEserciziPerCategoria(ex.name, ex.percent);
-  console.log(ex.name, lista);
-  });
-
   let exercises = [];
   let total = 0;
 
@@ -380,6 +375,15 @@ document.getElementById("saveWorkout").addEventListener("click", () => {
     exercises.push({ name, percent });
   });
 
+
+  // Parte temporaea
+   exercises.forEach(ex => {
+  let lista = getEserciziPerCategoria(ex.name, ex.percent);
+  console.log(ex.name, lista);
+  });
+
+
+  
   if (total > 100) {
     alert("Superi il 100%");
     return;
@@ -693,7 +697,8 @@ function autoGenerateScheda() {
 
 
 // Funzione per prendere gli esercizi
-unction getEserciziPerCategoria(cat, percentuale) {
+  
+function getEserciziPerCategoria(cat, percentuale) {
   if (!eserciziDB[cat]) return [];
 
   let lista = eserciziDB[cat];
