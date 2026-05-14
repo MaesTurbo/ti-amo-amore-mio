@@ -164,50 +164,69 @@ const categories = [
 
 // Database contenente tutti gli esercizi per ogni categoria che abbiamo deciso precedentemente
 const eserciziDB = {
+
   glutei: [
-    { nome: "Hip Thrust", diff: "difficile", peso: 3 },
-    { nome: "Squat", diff: "medio", peso: 2 },
-    { nome: "Affondi", diff: "medio", peso: 2 },
-    { nome: "Glute Bridge", diff: "facile", peso: 1 }
-  ],
-
-  spalle: [
-    { nome: "Military Press", diff: "difficile", peso: 3 },
-    { nome: "Alzate laterali", diff: "medio", peso: 2 },
-    { nome: "Alzate frontali", diff: "facile", peso: 1 }
-  ],
-
-  schiena: [
-    { nome: "Trazioni", diff: "difficile", peso: 3 },
-    { nome: "Lat Machine", diff: "medio", peso: 2 },
-    { nome: "Rematore", diff: "medio", peso: 2 }
+    { nome: "Squat bilanciere", diff: 4 },
+    { nome: "Squat manubri", diff: 3 },
+    { nome: "Hip Thrust bilanciere", diff: 4 },
+    { nome: "Hip Thrust macchina", diff: 3 },
+    { nome: "Glute Bridge", diff: 2 },
+    { nome: "Affondi", diff: 3 },
+    { nome: "Affondi camminati", diff: 4 },
+    { nome: "Leg press", diff: 3 },
+    { nome: "Kickback cavo", diff: 2 },
+    { nome: "Abductor machine", diff: 2 }
   ],
 
   petto: [
-    { nome: "Panca piana", diff: "difficile", peso: 3 },
-    { nome: "Panca inclinata", diff: "medio", peso: 2 },
-    { nome: "Croci", diff: "facile", peso: 1 }
+    { nome: "Panca piana bilanciere", diff: 5 },
+    { nome: "Panca piana manubri", diff: 4 },
+    { nome: "Panca inclinata bilanciere", diff: 5 },
+    { nome: "Panca inclinata manubri", diff: 4 },
+    { nome: "Chest press", diff: 3 },
+    { nome: "Croci manubri", diff: 2 },
+    { nome: "Croci ai cavi", diff: 2 },
+    { nome: "Push up", diff: 2 },
+    { nome: "Multipower panca", diff: 3 }
+  ],
+
+  schiena: [
+    { nome: "Lat machine", diff: 3 },
+    { nome: "Trazioni", diff: 5 },
+    { nome: "Rematore bilanciere", diff: 4 },
+    { nome: "Rematore manubrio", diff: 3 },
+    { nome: "Pulley basso", diff: 3 },
+    { nome: "Pullover cavo", diff: 2 },
+    { nome: "Machine row", diff: 3 }
+  ],
+
+  spalle: [
+    { nome: "Shoulder press bilanciere", diff: 4 },
+    { nome: "Shoulder press manubri", diff: 3 },
+    { nome: "Alzate laterali", diff: 2 },
+    { nome: "Alzate frontali", diff: 2 },
+    { nome: "Arnold press", diff: 4 },
+    { nome: "Face pull", diff: 2 },
+    { nome: "Macchina spalle", diff: 3 }
   ],
 
   addome: [
-    { nome: "Crunch", diff: "facile", peso: 1 },
-    { nome: "Plank", diff: "medio", peso: 2 },
-    { nome: "Leg Raise", diff: "medio", peso: 2 }
+    { nome: "Crunch", diff: 1 },
+    { nome: "Sit up", diff: 2 },
+    { nome: "Plank", diff: 3 },
+    { nome: "Leg raise", diff: 3 },
+    { nome: "Cable crunch", diff: 3 }
   ],
 
   cardio: [
-    { nome: "Corsa", diff: "medio", peso: 2 },
-    { nome: "Cyclette", diff: "facile", peso: 1 },
-    { nome: "HIIT", diff: "difficile", peso: 3 }
-  ],
-
-  corpo_libero: [
-    { nome: "Push-up", diff: "medio", peso: 2 },
-    { nome: "Burpees", diff: "difficile", peso: 3 },
-    { nome: "Squat libero", diff: "facile", peso: 1 }
+    { nome: "Corsa", diff: 3 },
+    { nome: "HIIT", diff: 5 },
+    { nome: "Cyclette", diff: 2 },
+    { nome: "Ellittica", diff: 2 },
+    { nome: "Salto corda", diff: 4 }
   ]
 };
-
+  
   
 
 let selectedDate = null;
@@ -382,6 +401,15 @@ document.getElementById("saveWorkout").addEventListener("click", () => {
   console.log(ex.name, lista);
   });
 
+
+  let schede = generaTreSchede(exercises);
+
+  console.log(schede);
+
+  // esempio: mostra la prima
+  stampaScheda(schede[0]);
+  
+  
 
   
   if (total > 100) {
@@ -695,6 +723,35 @@ function autoGenerateScheda() {
   showScheda(selectedDate);
 }
 
+//Funzione genera scheda
+function generaScheda(exercisesInput) {
+
+  let scheda = [];
+
+  exercisesInput.forEach(ex => {
+
+    let esercizi = generaEsercizi(ex.name, ex.percent);
+
+    scheda.push({
+      categoria: ex.name,
+      esercizi: esercizi
+    });
+
+  });
+
+  return scheda;
+}
+
+//Funzione che genera le schede
+  function generaTreSchede(exercisesInput) {
+  return [
+    generaScheda(exercisesInput),
+    generaScheda(exercisesInput),
+    generaScheda(exercisesInput)
+  ];
+}
+
+  
 
 // Funzione per prendere gli esercizi
   
@@ -717,10 +774,86 @@ function getEserciziPerCategoria(cat, percentuale) {
 }
 
 
+  //Funzione iniziale per classificazione delle serie in base alla difficolta dell'esercizio
+function getSerieERipetizioni(diff) {
+  switch(diff) {
+    case 5: return { serie: 3, reps: "6-8" };
+    case 4: return { serie: 3, reps: "8-10" };
+    case 3: return { serie: 3, reps: "10-12" };
+    case 2: return { serie: 3, reps: "12-15" };
+    case 1: return { serie: 2, reps: "15-20" };
+  }
+}
+
+
+//Funzione per il calcolo delle serie necessarie
+function calcolaSerie(percent) {
+  return Math.round((percent / 100) * 20); // 20 serie totali allenamento
+}
+
+//Mischia array
+  function shuffleArray(array) {
+  return array.sort(() => Math.random() - 0.5);
+}
+
+
+  //Funzione GENERAZIONE ESERCIZI PER UNA CATEGORIA
+function generaEsercizi(categoria, percentuale) {
+
+  const lista = eserciziDB[categoria];
+  if (!lista) return [];
+
+  let serieTarget = calcolaSerie(percentuale);
+  let serieAttuali = 0;
+
+  let eserciziScelti = [];
+  let pool = shuffleArray([...lista]);
+
+  for (let esercizio of pool) {
+
+    let info = getSerieERipetizioni(esercizio.diff);
+
+    if (serieAttuali >= serieTarget) break;
+
+    eserciziScelti.push({
+      nome: esercizio.nome,
+      serie: info.serie,
+      reps: info.reps,
+      diff: esercizio.diff
+    });
+
+    serieAttuali += info.serie;
+  }
+
+  return eserciziScelti;
+}
+
+
+// Funzione stampa scheda
+function stampaScheda(scheda) {
+
+  const container = document.getElementById("schedaContainer");
+  container.innerHTML = "";
+
+  scheda.forEach(gruppo => {
+
+    let div = document.createElement("div");
+    div.innerHTML = `<h3>${gruppo.categoria}</h3>`;
+
+    gruppo.esercizi.forEach(es => {
+      let p = document.createElement("p");
+      p.textContent = `${es.nome} - ${es.serie}x${es.reps}`;
+      div.appendChild(p);
+    });
+
+    container.appendChild(div);
+  });
+}
+
+
+
+
   
-
-
-
   
 // Richiami  
   
