@@ -152,6 +152,7 @@ button {
 
 <div id="schedaView"></div>
 
+
   
 <script>
 const calendar = document.getElementById("calendar");
@@ -402,12 +403,20 @@ document.getElementById("saveWorkout").addEventListener("click", () => {
   });
 
 
-  let schede = generaTreSchede(exercises);
+  let schede = JSON.parse(localStorage.getItem("schede")) || {};
 
-  console.log(schede);
+schede[selectedDate] = {
+  schedaA: generaScheda(exercises),
+  schedaB: generaScheda(exercises),
+  schedaC: generaScheda(exercises),
+  scelta: null,
+  completata: false
+};
 
-  // esempio: mostra la prima
-  stampaScheda(schede[0]);
+localStorage.setItem("schede", JSON.stringify(schede));
+
+loadSchede();
+showScheda(selectedDate);
   
   
 
@@ -425,7 +434,7 @@ document.getElementById("saveWorkout").addEventListener("click", () => {
 
   colorDays();
   
-  autoGenerateScheda();
+
   
   alert("Salvato 💪");
 });
@@ -568,11 +577,22 @@ function showScheda(data) {
 
     box.appendChild(titolo);
 
-    giorno[nome].forEach(ex => {
-      let p = document.createElement("p");
-      p.textContent = ex.name + " " + ex.percent + "%";
-      box.appendChild(p);
-    });
+
+    
+  giorno[nome].forEach(gruppo => {
+
+  let titoloGruppo = document.createElement("h4");
+  titoloGruppo.textContent = gruppo.categoria;
+  box.appendChild(titoloGruppo);
+
+  gruppo.esercizi.forEach(es => {
+    let p = document.createElement("p");
+    p.textContent = `${es.nome} - ${es.serie}x${es.reps}`;
+    box.appendChild(p);
+  });
+
+  });
+    
 
     // 🔥 bottone scegli
     let scegliBtn = document.createElement("button");
@@ -676,52 +696,6 @@ function updateAllSelects() {
 }
 
 
-  // Funzione di generazione delle schede
-function autoGenerateScheda() {
-  const data = JSON.parse(localStorage.getItem("workouts")) || {};
-  if (!data[selectedDate]) return;
-
-  let schede = JSON.parse(localStorage.getItem("schede")) || {};
-
-  const esercizi = data[selectedDate];
-
-  // 🔥 DIVISIONE INTELLIGENTE
-  const A = [];
-  const B = [];
-  const C = [];
-
-  esercizi.forEach(ex => {
-    const nome = ex.name.toLowerCase();
-
-    if (["petto", "spalle", "schiena"].includes(nome)) {
-      A.push(ex);
-    } 
-    else if (["glutei", "addome"].includes(nome)) {
-      B.push(ex);
-    } 
-    else {
-      C.push(ex);
-    }
-  });
-
-  // 🔥 fallback (se una scheda è vuota)
-  if (A.length === 0) A.push(...esercizi.slice(0, 2));
-  if (B.length === 0) B.push(...esercizi.slice(2, 4));
-  if (C.length === 0) C.push(...esercizi.slice(1, 3));
-
-  schede[selectedDate] = {
-    schedaA: A,
-    schedaB: B,
-    schedaC: C,
-    scelta: null,
-    completata: false
-  };
-
-  localStorage.setItem("schede", JSON.stringify(schede));
-
-  loadSchede();
-  showScheda(selectedDate);
-}
 
 //Funzione genera scheda
 function generaScheda(exercisesInput) {
@@ -830,6 +804,8 @@ function generaEsercizi(categoria, percentuale) {
 
 
 // Funzione stampa scheda
+  /*
+  
 function stampaScheda(scheda) {
 
   const container = document.getElementById("schedaContainer");
@@ -850,6 +826,7 @@ function stampaScheda(scheda) {
   });
 }
 
+*/
 
 
 
